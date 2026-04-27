@@ -430,10 +430,64 @@ $("download").onclick = async () => {
   const ctx = out.getContext("2d");
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(canvas,0,0,1206,2910);
-  const a = document.createElement("a");
-  a.download = `iOS-calendar-wallpaper-${$("year").value}-${$("month").value}.png`;
-  a.href = out.toDataURL("image/png");
-  a.click();
+  const dataUrl = out.toDataURL("image/png");
+  const fileName = `iOS-calendar-wallpaper-${$("year").value}-${$("month").value}.png`;
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  if (isMobile) {
+    const newWindow = window.open();
+    if (newWindow) {
+      newWindow.document.write(`
+        <!doctype html>
+        <html lang="zh-CN">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <title>长按图片保存</title>
+          <style>
+            body{
+              margin:0;
+              min-height:100vh;
+              background:#000;
+              color:#fff;
+              font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",Arial,sans-serif;
+              display:flex;
+              flex-direction:column;
+              align-items:center;
+              justify-content:center;
+              padding:20px;
+            }
+            img{
+              width:min(100%,420px);
+              height:auto;
+              border-radius:24px;
+              box-shadow:0 20px 70px rgba(255,255,255,.16);
+            }
+            p{
+              margin:18px 0 0;
+              font-size:15px;
+              color:rgba(255,255,255,.82);
+              text-align:center;
+              line-height:1.6;
+            }
+          </style>
+        </head>
+        <body>
+          <img src="${dataUrl}" alt="生成的壁纸">
+          <p>长按图片，选择“保存到照片”</p>
+        </body>
+        </html>
+      `);
+      newWindow.document.close();
+    } else {
+      alert("浏览器阻止了新窗口，请允许弹窗后再试。");
+    }
+  } else {
+    const a = document.createElement("a");
+    a.download = fileName;
+    a.href = dataUrl;
+    a.click();
+  }
 };
 
 autoTextColor();
