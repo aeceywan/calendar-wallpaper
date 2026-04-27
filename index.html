@@ -13,6 +13,7 @@
     --card:#151515;
     --holiday:#b9d886;
     --text:#ffffff;
+    --calendar-row-gap:13.333px;
     --ui-bg:#f5f5f7;
     --ui-card:rgba(255,255,255,.78);
     --ui-line:rgba(0,0,0,.08);
@@ -90,6 +91,34 @@
   .control-row{display:grid;grid-template-columns:1fr 112px;gap:10px;align-items:center}
   .control-row input,.control-row button{margin-top:0}
   .inline-btn{height:44px}
+  .range-wrap{
+    display:grid;
+    grid-template-columns:1fr 56px;
+    gap:12px;
+    align-items:center;
+    height:44px;
+    padding:0 12px;
+    border:1px solid var(--ui-line);
+    border-radius:15px;
+    background:rgba(255,255,255,.72);
+  }
+  .range-wrap input{
+    height:28px;
+    padding:0;
+    border:0;
+    background:transparent;
+    accent-color:var(--ui-blue);
+  }
+  .range-wrap input:focus{
+    box-shadow:none;
+    background:transparent;
+  }
+  .range-wrap span{
+    font-size:13px;
+    color:var(--ui-sub);
+    text-align:right;
+    font-variant-numeric:tabular-nums;
+  }
   button{
     margin-top:18px;
     border:0;
@@ -201,7 +230,7 @@
   .days{
     display:grid;
     grid-template-columns:repeat(7,1fr);
-    row-gap:13.333px; /* 导出后为 40px */
+    row-gap:var(--calendar-row-gap);
     text-align:center;
   }
   .day{
@@ -254,6 +283,12 @@
       <input id="mondayStart" type="checkbox" style="width:18px;height:18px;margin:0;">
       星期一作为每周第一天
     </label>
+
+    <label>日历行间距</label>
+    <div class="range-wrap">
+      <input id="rowGap" type="range" min="20" max="70" step="1" value="40">
+      <span id="rowGapValue">40px</span>
+    </div>
 
     <label>祝福语</label>
     <input id="wish" maxlength="4" value="富贵吉祥">
@@ -370,6 +405,11 @@ function holidayName(date){
 function render(){
   const year = +$("year").value;
   const month = +$("month").value;
+  const rowGapEl = $("rowGap");
+  const rowGapValueEl = $("rowGapValue");
+  const rowGapExport = rowGapEl ? +rowGapEl.value : 40;
+  if (rowGapValueEl) rowGapValueEl.textContent = rowGapExport + "px";
+  document.documentElement.style.setProperty("--calendar-row-gap", (rowGapExport / 3) + "px");
   document.documentElement.style.setProperty("--bg", $("bgColor").value);
   document.documentElement.style.setProperty("--card", $("cardColor").value);
   document.documentElement.style.setProperty("--holiday", $("holidayColor").value);
@@ -409,7 +449,10 @@ function render(){
     days.appendChild(div);
   }
 }
-["year","month","wish","bgColor","cardColor","holidayColor","textColor","mondayStart"].forEach(id => $(id).addEventListener("input", render));
+["year","month","wish","bgColor","cardColor","holidayColor","textColor","mondayStart","rowGap"].forEach(id => {
+  const el = $(id);
+  if (el) el.addEventListener("input", render);
+});
 $("autoText").onclick = () => { autoTextColor(); render(); };
 $("syncHoliday").onclick = () => { $("holidayColor").value = $("bgColor").value; render(); };
 $("cardColor").addEventListener("input", () => { autoTextColor(); render(); });
