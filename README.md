@@ -1,85 +1,56 @@
-# calendar-wallpaper
-![preview](./thumbnail.png)
 # iOS Calendar Wallpaper Generator
 
-![preview](./thumbnail.png)
+![preview](./Thumbnail.png)
 
-一个基于浏览器的 iOS 风格日历壁纸生成工具。
+Create iOS-style calendar wallpapers directly in your browser.  
+No app needed — customize and export instantly.
 
 👉 https://aeceywan.github.io/calendar-wallpaper/
 
 ---
 
-## 🇨🇳 中文介绍
+## ✨ Features
 
-一个基于浏览器的轻量小工具，用于快速生成具有 iOS 风格的日历壁纸。
-
-无需下载 App，打开网页即可自定义并导出高分辨率壁纸。
-
-### ✨ 功能特点
-
-- 📱 iOS 风格设计（简约、现代）
-- 🎨 自定义配色：
-  - 背景颜色
-  - 日历背景
-  - 节假日期颜色
-  - 普通日期颜色（自动适配深浅）
-- 🗓 完整日历信息：
-  - 公历
-  - 中国农历
-  - 常见节假日
-- 🔤 中英文月份显示
-- 🎉 自定义祝福语（四字）
-- 🔄 支持周一 / 周日作为一周起始
-- 🖼 高清导出：1206 × 2910 px（iPhone 壁纸尺寸）
-
-### 📥 使用方式
-
-1. 打开网页
-2. 设置颜色、月份、祝福语
-3. 点击生成并下载
-
-- 💻 电脑端：直接下载 PNG
-- 📱 手机端：自动打开图片，长按保存
+- 📱 Clean, iOS-inspired design  
+- 🎨 Flexible color customization  
+- 🗓 Gregorian + Chinese lunar calendar + holidays  
+- 🔤 Chinese & English month display  
+- 🎉 Custom 4-character blessing text  
+- 🔄 Week start toggle (Sunday / Monday)  
+- 🖼 High-resolution export (1206 × 2910 px)
 
 ---
 
-## 🇺🇸 English
-
-A lightweight browser-based tool for generating iOS-style calendar wallpapers.
-
-No app required — just open the page, customize, and export a high-resolution wallpaper.
-
-### ✨ Features
-
-- 📱 iOS-inspired design (clean & modern)
-- 🎨 Customizable colors:
-  - Background
-  - Calendar panel
-  - Holiday text
-  - Regular date text (auto adapts to light/dark)
-- 🗓 Full calendar info:
-  - Gregorian dates
-  - Chinese lunar calendar
-  - Common holidays
-- 🔤 Chinese & English month display
-- 🎉 Custom blessing text (4 characters)
-- 🔄 Week start toggle (Sunday / Monday)
-- 🖼 High-resolution export: 1206 × 2910 px
-
-### 📥 How to Use
+## 📥 Usage
 
 1. Open the page  
 2. Customize colors, month, and text  
 3. Generate and download  
 
 - 💻 Desktop: direct PNG download  
-- 📱 Mobile: opens image → long press to save  
+- 📱 Mobile: long press to save image  
+
+---
+
+## 🇨🇳 中文介绍
+
+一个基于浏览器的 iOS 风格日历壁纸生成工具，无需下载即可使用。
+
+👉 https://aeceywan.github.io/calendar-wallpaper/
+
+### ✨ 功能
+
+- 📱 简约 iOS 风格设计  
+- 🎨 支持多种颜色自定义  
+- 🗓 公历 + 农历 + 节假日  
+- 🔤 中英文月份显示  
+- 🎉 自定义祝福语  
+- 🔄 支持周一 / 周日作为起始  
+- 🖼 高清导出（1206 × 2910 px）
 
 ---
 
 ## 🛠 Tech Stack
 
-- HTML + CSS + JavaScript
-- html2canvas
-- No backend required
+- HTML / CSS / JavaScript  
+- html2canvas  
