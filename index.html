@@ -569,7 +569,6 @@
     </div>
   </main>
 
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 
@@ -697,158 +696,193 @@ function render(){
   }
 }
 
+
+function roundRect(ctx, x, y, w, h, r){
+  const radius = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + w - radius, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+  ctx.lineTo(x + w, y + h - radius);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+  ctx.lineTo(x + radius, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
+
+function topRoundRect(ctx, x, y, w, h, r){
+  const radius = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + w - radius, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+  ctx.lineTo(x + w, y + h);
+  ctx.lineTo(x, y + h);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
+
+function drawCenteredText(ctx, text, x, y, font, color, baseline = "alphabetic"){
+  ctx.font = font;
+  ctx.fillStyle = color;
+  ctx.textAlign = "center";
+  ctx.textBaseline = baseline;
+  ctx.fillText(text, x, y);
+}
+
+function drawWallpaperCanvas(){
+  const exportScale = 3;
+  const W = 1206;
+  const H = 2910;
+
+  const bg = $("bgColor").value;
+  const card = $("cardColor").value;
+  const holiday = $("holidayColor").value;
+  const text = $("textColor").value;
+
+  const year = +$("year").value;
+  const month = +$("month").value;
+  const mondayStart = $("mondayStart").checked;
+  const rowGap = +$("rowGap").value;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d");
+
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  const cardH = 1762;
+  const cardY = H - cardH;
+  const cardRadius = 216;
+
+  ctx.fillStyle = card;
+  topRoundRect(ctx, 0, cardY, W, cardH, cardRadius);
+  ctx.fill();
+
+  const centerX = W / 2;
+
+  // Header baseline positions.
+  const headerTop = cardY + 100;
+  const headerCenterY = headerTop + 44;
+
+  // Chinese month left part.
+  const zhX = centerX - 245;
+  ctx.fillStyle = holiday;
+  roundRect(ctx, zhX - 36, headerCenterY - 31, 9, 66, 3);
+  ctx.fill();
+
+  ctx.font = '600 56px "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif';
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = holiday;
+  ctx.fillText(cnMonths[month - 1], zhX, headerCenterY);
+
+  // English month.
+  ctx.font = '700 88px Inter, -apple-system, BlinkMacSystemFont, Arial, sans-serif';
+  ctx.textAlign = "center";
+  ctx.fillStyle = text;
+  ctx.fillText(enMonths[month - 1], centerX + 20, headerCenterY + 1);
+
+  // Blessing text, two rows.
+  const wish = ($("wish").value || "富贵吉祥").slice(0,4);
+  ctx.font = '700 42px "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif';
+  ctx.textAlign = "center";
+  ctx.fillStyle = holiday;
+  ctx.fillText(wish.slice(0,2), centerX + 255, headerCenterY - 24);
+  ctx.fillText(wish.slice(2,4), centerX + 255, headerCenterY + 27);
+
+  // Week row.
+  const contentX = 153;
+  const contentW = 900;
+  const colW = contentW / 7;
+  const weekY = headerTop + 154;
+  const weekLabels = mondayStart ? ["M","T","W","T","F","S","S"] : ["S","M","T","W","T","F","S"];
+
+  ctx.font = '600 52px Inter, -apple-system, BlinkMacSystemFont, Arial, sans-serif';
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  for(let i=0;i<7;i++){
+    const isWeekendCol = mondayStart ? i >= 5 : (i === 0 || i === 6);
+    ctx.fillStyle = isWeekendCol ? holiday : text;
+    ctx.fillText(weekLabels[i], contentX + colW * i + colW / 2, weekY);
+  }
+
+  // Dates.
+  const first = new Date(year, month - 1, 1);
+  const count = new Date(year, month, 0).getDate();
+  const blankCount = mondayStart ? ((first.getDay() + 6) % 7) : first.getDay();
+
+  const dateStartY = weekY + 104; // roughly 53px gap + date visual start
+  const rowStep = 96 + rowGap;    // date block height + user row gap
+
+  for(let d=1; d<=count; d++){
+    const index = blankCount + d - 1;
+    const col = index % 7;
+    const row = Math.floor(index / 7);
+    const x = contentX + colW * col + colW / 2;
+    const y = dateStartY + row * rowStep;
+
+    const dateObj = new Date(year, month - 1, d);
+    const h = holidayName(dateObj);
+    const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
+    const color = (h || isWeekend) ? holiday : text;
+
+    ctx.fillStyle = color;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+
+    ctx.font = '500 58px Inter, -apple-system, BlinkMacSystemFont, Arial, sans-serif';
+    ctx.fillText(String(d), x, y);
+
+    ctx.font = '400 32px "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif';
+    const sub = h ? h : lunarText(dateObj);
+    if(sub){
+      // Support 2-line labels like 母亲节 if needed.
+      if(sub.length > 3){
+        ctx.fillText(sub.slice(0,2), x, y + 42);
+        ctx.fillText(sub.slice(2), x, y + 78);
+      }else{
+        ctx.fillText(sub, x, y + 42);
+      }
+    }
+  }
+
+  return canvas;
+}
+
 async function downloadWallpaper(preOpenedWindow = null){
-  const node = $("wallpaper");
-  const canvas = await html2canvas(node, {
-    backgroundColor:null,
-    scale:3,
-    width:402,
-    height:970,
-    useCORS:true
-  });
-
-  const out = document.createElement("canvas");
-  out.width = 1206;
-  out.height = 2910;
-
-  const ctx = out.getContext("2d");
-  ctx.imageSmoothingEnabled = true;
-  ctx.drawImage(canvas,0,0,1206,2910);
-
-  const dataUrl = out.toDataURL("image/png");
+  const out = drawWallpaperCanvas();
   const fileName = `iOS-calendar-wallpaper-${$("year").value}-${$("month").value}.png`;
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   if(isMobile){
-    const win = preOpenedWindow || window.open("", "_blank");
+    out.toBlob((blob) => {
+      if(!blob){
+        alert("图片生成失败，请再试一次。");
+        return;
+      }
 
-    if(win){
-      win.document.open();
-      win.document.write(`
-        <!doctype html>
-        <html lang="zh-CN">
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-          <title>保存壁纸</title>
-          <style>
-            *{box-sizing:border-box}
-            html,body{
-              margin:0;
-              width:100%;
-              min-height:100%;
-              background:#0b0b0d;
-              color:#fff;
-              font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",Arial,sans-serif;
-            }
-            body{
-              min-height:100svh;
-              padding:calc(22px + env(safe-area-inset-top)) 18px calc(24px + env(safe-area-inset-bottom));
-              display:flex;
-              flex-direction:column;
-              align-items:center;
-              justify-content:flex-start;
-              overflow:auto;
-            }
-            .tips{
-              width:100%;
-              max-width:430px;
-              margin:0 auto 16px;
-              padding:16px 16px 14px;
-              border-radius:22px;
-              background:rgba(255,255,255,.10);
-              border:1px solid rgba(255,255,255,.14);
-              backdrop-filter:blur(18px);
-              -webkit-backdrop-filter:blur(18px);
-              text-align:center;
-            }
-            h1{
-              margin:0 0 6px;
-              font-size:20px;
-              line-height:1.25;
-              letter-spacing:-.02em;
-            }
-            p{
-              margin:0;
-              font-size:14px;
-              line-height:1.55;
-              color:rgba(255,255,255,.72);
-            }
-            .image-wrap{
-              width:100%;
-              display:flex;
-              justify-content:center;
-              align-items:flex-start;
-              padding-bottom:18px;
-            }
-            img{
-              display:block;
-              width:min(82vw, 390px);
-              max-width:100%;
-              height:auto;
-              border-radius:28px;
-              box-shadow:0 24px 80px rgba(0,0,0,.55);
-              -webkit-user-select:auto;
-              user-select:auto;
-              -webkit-touch-callout:default;
-            }
-            .actions{
-              position:sticky;
-              bottom:0;
-              width:100%;
-              max-width:430px;
-              display:flex;
-              gap:12px;
-              padding-top:10px;
-              background:linear-gradient(180deg,rgba(11,11,13,0),#0b0b0d 38%);
-            }
-            a,button{
-              flex:1;
-              height:52px;
-              border:0;
-              border-radius:16px;
-              font-size:16px;
-              font-weight:700;
-              text-decoration:none;
-              display:flex;
-              align-items:center;
-              justify-content:center;
-            }
-            a{
-              background:linear-gradient(180deg,#4f73ff 0%,#3156ff 100%);
-              color:#fff;
-            }
-            button{
-              background:rgba(255,255,255,.12);
-              color:#fff;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="tips">
-            <h1>长按图片保存壁纸</h1>
-            <p>在图片上长按，选择「保存到照片」。如果长按没有反应，请点「打开原图」后再长按保存。</p>
-          </div>
+      const blobUrl = URL.createObjectURL(blob);
+      const win = preOpenedWindow || window.open("", "_blank");
 
-          <div class="image-wrap">
-            <img id="wallpaperImage" src="${dataUrl}" alt="生成的壁纸">
-          </div>
+      if(win){
+        win.location.href = blobUrl;
+      }else{
+        window.location.href = blobUrl;
+      }
 
-          <div class="actions">
-            <a href="${dataUrl}" target="_blank" rel="noopener">打开原图</a>
-            <button onclick="window.close()">关闭</button>
-          </div>
-        </body>
-        </html>
-      `);
-      win.document.close();
-    }else{
-      alert("浏览器阻止了新窗口，请允许弹窗后再试。");
-    }
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    }, "image/png");
   }else{
     const a = document.createElement("a");
     a.download = fileName;
-    a.href = dataUrl;
+    a.href = out.toDataURL("image/png");
     a.click();
   }
 }
@@ -887,7 +921,7 @@ function init(){
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const preOpenedWindow = isMobile ? window.open("", "_blank") : null;
     if(preOpenedWindow){
-      preOpenedWindow.document.write("<p style='font-family:-apple-system;padding:24px;'>正在生成壁纸...</p>");
+      preOpenedWindow.document.write("<p style='font-family:-apple-system;padding:24px;'>正在生成原始 PNG 图片，打开后长按图片保存。</p>");
     }
     downloadWallpaper(preOpenedWindow);
   });
