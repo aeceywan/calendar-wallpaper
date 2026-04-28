@@ -489,6 +489,28 @@
     }
   }
 
+
+  .panel-download-btn{
+    display:none;
+  }
+
+  @media(max-width:900px){
+    .panel-download-btn{
+      display:block;
+      width:100%;
+      height:56px;
+      margin-top:24px;
+      margin-bottom:8px;
+      border:0;
+      border-radius:18px;
+      background:linear-gradient(180deg,#4f73ff 0%,#3156ff 100%);
+      color:#fff;
+      font-size:17px;
+      font-weight:700;
+      box-shadow:0 12px 30px rgba(0,85,255,.25);
+    }
+  }
+
 </style>
 </head>
 
@@ -540,6 +562,7 @@
     </div>
 
     <button id="download" type="button">下载壁纸</button>
+    <button id="panelDownloadBtn" class="panel-download-btn" type="button">下载壁纸</button>
 
     <p class="tip">
       默认画布：1206 × 2910 px。打开时自动显示当前月份，并随机生成一组配色。手机端点击下载后会打开图片，长按即可保存到相册。
@@ -916,6 +939,19 @@ function init(){
     downloadWallpaper();
   });
 
+  const panelDownloadBtn = $("panelDownloadBtn");
+  if(panelDownloadBtn){
+    panelDownloadBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const preOpenedWindow = isMobile ? window.open("", "_blank") : null;
+      if(preOpenedWindow){
+        preOpenedWindow.document.write("<p style='font-family:-apple-system;padding:24px;'>正在生成原始 PNG 图片，打开后长按图片保存。</p>");
+      }
+      downloadWallpaper(preOpenedWindow);
+    });
+  }
+
   $("mobileDownloadBtn").addEventListener("click", (e) => {
     e.preventDefault();
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -957,16 +993,25 @@ function init(){
   }
 
   let startY = 0;
+  let touchStartedInPanel = false;
+
   document.addEventListener("touchstart", (e) => {
     if(e.touches && e.touches.length){
       startY = e.touches[0].clientY;
+      touchStartedInPanel = !!e.target.closest(".panel");
     }
   }, {passive:true});
 
   document.addEventListener("touchend", (e) => {
     if(!e.changedTouches || !e.changedTouches.length) return;
+
+    // 在设置面板内部滑动，只滚动设置内容，不触发收起。
+    if(touchStartedInPanel) return;
+
     const endY = e.changedTouches[0].clientY;
     const deltaY = endY - startY;
+
+    // 面板外空白区域：上滑打开，下滑收起。
     if(deltaY < -45) document.body.classList.add("panel-open");
     if(deltaY > 45) document.body.classList.remove("panel-open");
   }, {passive:true});
