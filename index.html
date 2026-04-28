@@ -918,44 +918,57 @@ function drawWallpaperCanvas(){
   }
 
   // Dates.
-  const first = new Date(year, month - 1, 1);
-  const count = new Date(year, month, 0).getDate();
-  const blankCount = mondayStart ? ((first.getDay() + 6) % 7) : first.getDay();
+  // 从“当前预览 DOM 的真实视觉位置”读取日期坐标，再换算到 1206×2910 导出尺寸。
+  // 这样移动端预览被 scale 缩放时，导出仍然能和用户看到的预览保持一致。
+  const sourceEl = $("wallpaper");
+  const sourceRect = sourceEl.getBoundingClientRect();
+  const visualScale = sourceRect.width / sourceEl.offsetWidth;
+  const previewToExport = 3;
 
-  const dateStartY = weekY + 104; // roughly 53px gap + date visual start
-  const rowStep = 108 + rowGap;   // 与预览一致：36px 日期格高度 × 3 + 行间距
+  const dayEls = Array.from(document.querySelectorAll("#days .day"));
 
-  for(let d=1; d<=count; d++){
-    const index = blankCount + d - 1;
-    const col = index % 7;
-    const row = Math.floor(index / 7);
-    const x = contentX + colW * col + colW / 2;
-    const y = dateStartY + row * rowStep;
+  dayEls.forEach(dayEl => {
+    const dateEl = dayEl.querySelector(".date");
+    const lunarEl = dayEl.querySelector(".lunar");
+    if(!dateEl) return;
 
-    const dateObj = new Date(year, month - 1, d);
-    const h = holidayName(dateObj);
-    const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
-    const color = (h || isWeekend) ? holiday : text;
+    const dateRect = dateEl.getBoundingClientRect();
+    const dayRect = dayEl.getBoundingClientRect();
+
+    const xPreview = ((dayRect.left + dayRect.width / 2) - sourceRect.left) / visualScale;
+    const yPreview = (dateRect.top - sourceRect.top) / visualScale;
+
+    const x = xPreview * previewToExport;
+    const y = yPreview * previewToExport;
+
+    const isHoliday = dayEl.classList.contains("holiday");
+    const color = isHoliday ? holiday : text;
 
     ctx.fillStyle = color;
     ctx.textAlign = "center";
-    ctx.textBaseline = "alphabetic";
+    ctx.textBaseline = "top";
 
-    ctx.font = '500 58px Inter, -apple-system, BlinkMacSystemFont, Arial, sans-serif';
-    ctx.fillText(String(d), x, y);
+    // CSS: .date font-size 18px × 3
+    ctx.font = '500 54px Inter, -apple-system, BlinkMacSystemFont, Arial, sans-serif';
+    ctx.fillText(dateEl.textContent.trim(), x, y);
 
-    ctx.font = '400 32px "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif';
-    const sub = h ? h : lunarText(dateObj);
+    const sub = lunarEl ? lunarEl.textContent.trim() : "";
     if(sub){
-      // Support 2-line labels like 母亲节 if needed.
+      const lunarRect = lunarEl.getBoundingClientRect();
+      const lunarYPreview = (lunarRect.top - sourceRect.top) / visualScale;
+      const lunarY = lunarYPreview * previewToExport;
+
+      // CSS: .lunar font-size 10px × 3
+      ctx.font = '400 30px "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif';
+
       if(sub.length > 3){
-        ctx.fillText(sub.slice(0,2), x, y + 42);
-        ctx.fillText(sub.slice(2), x, y + 78);
+        ctx.fillText(sub.slice(0,2), x, lunarY);
+        ctx.fillText(sub.slice(2), x, lunarY + 34);
       }else{
-        ctx.fillText(sub, x, y + 42);
+        ctx.fillText(sub, x, lunarY);
       }
     }
-  }
+  });
 
   return canvas;
 }
@@ -994,6 +1007,7 @@ async function downloadWallpaper(preOpenedWindow = null){
 
 function randomizePalette(){
   const palettes = [
+    // 深色日历背景 + 明亮外背景
     { bg:"#b9d886", card:"#151515" },
     { bg:"#d9c7ff", card:"#17151f" },
     { bg:"#f6c7b6", card:"#191514" },
@@ -1002,16 +1016,40 @@ function randomizePalette(){
     { bg:"#c7ead7", card:"#102018" },
     { bg:"#f4c6d7", card:"#20131a" },
     { bg:"#c9d1ff", card:"#121522" },
-    { bg:"#e7e0d1", card:"#181713" },
     { bg:"#bfe3df", card:"#0f1b1a" },
-    { bg:"#ffcfdf", card:"#111827" },
-    { bg:"#c8f0ff", card:"#12121a" }
+    { bg:"#ffb86b", card:"#17120d" },
+    { bg:"#8be9fd", card:"#101820" },
+    { bg:"#ff7aa2", card:"#201018" },
+
+    // 浅色日历背景 + 鲜艳外背景
+    { bg:"#ff6b6b", card:"#fff6f2", holiday:"#d94d4d" },
+    { bg:"#ff9f1c", card:"#fff7e6", holiday:"#c87800" },
+    { bg:"#2ec4b6", card:"#effffc", holiday:"#139888" },
+    { bg:"#3a86ff", card:"#f0f6ff", holiday:"#2368d8" },
+    { bg:"#8338ec", card:"#f7f0ff", holiday:"#6c2bd9" },
+    { bg:"#ff006e", card:"#fff0f6", holiday:"#d6005d" },
+    { bg:"#00b4d8", card:"#eefbff", holiday:"#008fb0" },
+    { bg:"#06d6a0", card:"#effff9", holiday:"#00a77a" },
+    { bg:"#fb5607", card:"#fff1e8", holiday:"#d74700" },
+    { bg:"#7bdff2", card:"#fbfeff", holiday:"#2898ad" },
+    { bg:"#f15bb5", card:"#fff0fa", holiday:"#c93d91" },
+    { bg:"#fee440", card:"#fffce6", holiday:"#b99b00" },
+    { bg:"#9b5de5", card:"#f7f0ff", holiday:"#7442bd" },
+
+    // 更高级的低饱和亮色组合
+    { bg:"#e76f51", card:"#fff4ef", holiday:"#b94f37" },
+    { bg:"#2a9d8f", card:"#effbf8", holiday:"#197d72" },
+    { bg:"#e9c46a", card:"#fff9e8", holiday:"#b28b23" },
+    { bg:"#f4a261", card:"#fff4e8", holiday:"#c67835" },
+    { bg:"#a8dadc", card:"#fbffff", holiday:"#4b9ea0" },
+    { bg:"#ffafcc", card:"#fff5fa", holiday:"#d96f9c" },
+    { bg:"#bde0fe", card:"#f7fbff", holiday:"#5b9bd8" }
   ];
 
   const picked = palettes[Math.floor(Math.random() * palettes.length)];
   $("bgColor").value = picked.bg;
   $("cardColor").value = picked.card;
-  $("holidayColor").value = picked.bg;
+  $("holidayColor").value = picked.holiday || picked.bg;
   autoTextColor();
   render();
 }
