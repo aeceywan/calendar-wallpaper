@@ -904,7 +904,9 @@ function drawWallpaperCanvas(){
   const contentX = 153;
   const contentW = 900;
   const colW = contentW / 7;
-  const weekY = headerTop + 154;
+  // 和 UI 参数统一：月份行 → 星期行 60px，导出为 3 倍。
+  const gapMonthToWeek = 60 * 3;
+  const weekY = headerCenterY + gapMonthToWeek;
   const weekLabels = mondayStart ? ["M","T","W","T","F","S","S"] : ["S","M","T","W","T","F","S"];
 
   ctx.font = '600 52px Inter, -apple-system, BlinkMacSystemFont, Arial, sans-serif';
