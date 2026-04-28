@@ -542,7 +542,7 @@
     <button id="download" type="button">下载壁纸</button>
 
     <p class="tip">
-      默认画布：1206 × 2910 px。预览为等比缩小，下载时会按原始尺寸导出。手机端点击下载后会打开图片，长按即可保存到相册。
+      默认画布：1206 × 2910 px。打开时自动显示当前月份，并随机生成一组配色。手机端点击下载后会打开图片，长按即可保存到相册。
     </p>
   </aside>
 
@@ -582,7 +582,7 @@ for(let i=1;i<=12;i++){
   const opt=document.createElement("option");
   opt.value=i;
   opt.textContent=i+"月";
-  if(i===5) opt.selected=true;
+  // 默认月份由当前日期自动设置
   $("month").appendChild(opt);
 }
 
@@ -860,8 +860,30 @@ function init(){
     if(deltaY > 45) document.body.classList.remove("panel-open");
   }, {passive:true});
 
+
+  const palettes = [
+    { bg:"#b9d886", card:"#151515" },
+    { bg:"#d9c7ff", card:"#17151f" },
+    { bg:"#f6c7b6", card:"#191514" },
+    { bg:"#b8d8ff", card:"#101722" },
+    { bg:"#f2d46f", card:"#19160d" },
+    { bg:"#c7ead7", card:"#102018" },
+    { bg:"#f4c6d7", card:"#20131a" },
+    { bg:"#c9d1ff", card:"#121522" },
+    { bg:"#e7e0d1", card:"#181713" },
+    { bg:"#bfe3df", card:"#0f1b1a" }
+  ];
+
+  const today = new Date();
+  $("year").value = today.getFullYear();
+  $("month").value = today.getMonth() + 1;
+
+  const picked = palettes[Math.floor(Math.random() * palettes.length)];
+  $("bgColor").value = picked.bg;
+  $("cardColor").value = picked.card;
+  $("holidayColor").value = picked.bg;
+
   autoTextColor();
-  $("holidayColor").value = $("bgColor").value;
   render();
 }
 
