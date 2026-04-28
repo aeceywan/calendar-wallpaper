@@ -490,6 +490,55 @@
   }
 
 
+  .random-color-btn{
+    position:absolute;
+    top:34px;
+    right:34px;
+    width:44px;
+    height:44px;
+    border:0;
+    border-radius:999px;
+    padding:0;
+    margin:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(255,255,255,.76);
+    color:#111;
+    box-shadow:0 8px 24px rgba(0,0,0,.10);
+    backdrop-filter:blur(20px) saturate(1.2);
+    -webkit-backdrop-filter:blur(20px) saturate(1.2);
+    z-index:10;
+  }
+
+  .random-color-btn svg{
+    width:21px;
+    height:21px;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:2.25;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+
+  @media(max-width:900px){
+    .random-color-btn{
+      position:fixed;
+      top:18px;
+      right:18px;
+      width:46px;
+      height:46px;
+      z-index:50;
+    }
+
+    body.panel-open .random-color-btn{
+      top:14px;
+      right:14px;
+      transform:scale(.92);
+    }
+  }
+
+
   .panel-download-btn{
     display:none;
   }
@@ -511,6 +560,21 @@
     }
   }
 
+
+  @media(max-width:900px){
+    select#year,
+    select#month{
+      -webkit-appearance:none;
+      appearance:none;
+      background:
+        linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.74));
+      font-size:16px;
+      font-weight:600;
+      text-align:center;
+      text-align-last:center;
+    }
+  }
+
 </style>
 </head>
 
@@ -521,7 +585,7 @@
     <div class="row">
       <div>
         <label>年份</label>
-        <input id="year" type="number" min="1901" max="2100" value="2026">
+        <select id="year"></select>
       </div>
       <div>
         <label>月份</label>
@@ -570,6 +634,16 @@
   </aside>
 
   <main class="stage">
+    
+<button id="randomColorBtn" class="random-color-btn" type="button" aria-label="随机配色" title="随机配色">
+  <svg viewBox="0 0 48 48" fill="none">
+    <path d="M40 33L44 37L40 41" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M40 7L44 11L40 15" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M44 11H37C29.8203 11 24 16.8203 24 24C24 31.1797 29.8203 37 37 37H44" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+    <path d="M4 37H11C18.1797 37 24 31.1797 24 24C24 16.8203 18.1797 11 11 11H4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+  </svg>
+</button>
+
 <div id="wallpaper">
       <section class="calendar-card">
         <div class="header">
@@ -599,6 +673,13 @@ const cnMonths = ["一月","二月","三月","四月","五月","六月","七月"
 const enMonths = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
 const lunarDays = ["初一","初二","初三","初四","初五","初六","初七","初八","初九","初十","十一","十二","十三","十四","十五","十六","十七","十八","十九","二十","廿一","廿二","廿三","廿四","廿五","廿六","廿七","廿八","廿九","三十"];
 const lunarMonths = ["正月","二月","三月","四月","五月","六月","七月","八月","九月","十月","冬月","腊月"];
+
+for(let y=1901;y<=2100;y++){
+  const opt=document.createElement("option");
+  opt.value=y;
+  opt.textContent=y + "年";
+  $("year").appendChild(opt);
+}
 
 for(let i=1;i<=12;i++){
   const opt=document.createElement("option");
@@ -910,9 +991,35 @@ async function downloadWallpaper(preOpenedWindow = null){
   }
 }
 
+
+function randomizePalette(){
+  const palettes = [
+    { bg:"#b9d886", card:"#151515" },
+    { bg:"#d9c7ff", card:"#17151f" },
+    { bg:"#f6c7b6", card:"#191514" },
+    { bg:"#b8d8ff", card:"#101722" },
+    { bg:"#f2d46f", card:"#19160d" },
+    { bg:"#c7ead7", card:"#102018" },
+    { bg:"#f4c6d7", card:"#20131a" },
+    { bg:"#c9d1ff", card:"#121522" },
+    { bg:"#e7e0d1", card:"#181713" },
+    { bg:"#bfe3df", card:"#0f1b1a" },
+    { bg:"#ffcfdf", card:"#111827" },
+    { bg:"#c8f0ff", card:"#12121a" }
+  ];
+
+  const picked = palettes[Math.floor(Math.random() * palettes.length)];
+  $("bgColor").value = picked.bg;
+  $("cardColor").value = picked.card;
+  $("holidayColor").value = picked.bg;
+  autoTextColor();
+  render();
+}
+
 function init(){
   ["year","month","wish","bgColor","cardColor","holidayColor","textColor","mondayStart","rowGap"].forEach(id => {
-    $(id).addEventListener("input", render);
+    const el = $(id);
+    if(el) el.addEventListener("input", render);
   });
 
   $("autoText").addEventListener("click", () => {
@@ -952,6 +1059,14 @@ function init(){
     });
   }
 
+  const randomColorBtn = $("randomColorBtn");
+  if(randomColorBtn){
+    randomColorBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      randomizePalette();
+    });
+  }
+
   $("mobileDownloadBtn").addEventListener("click", (e) => {
     e.preventDefault();
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -972,78 +1087,35 @@ function init(){
     mobileBackdrop.addEventListener("click", () => {
       document.body.classList.remove("panel-open");
     });
-  }
 
-  let panelDragStartY = 0;
-  const panelEl = document.querySelector(".panel");
-  if(panelEl){
-    panelEl.addEventListener("touchstart", (e) => {
+    let backdropStartY = 0;
+    mobileBackdrop.addEventListener("touchstart", (e) => {
       if(e.touches && e.touches.length){
-        panelDragStartY = e.touches[0].clientY;
+        backdropStartY = e.touches[0].clientY;
       }
     }, {passive:true});
 
-    panelEl.addEventListener("touchend", (e) => {
+    mobileBackdrop.addEventListener("touchend", (e) => {
       if(!e.changedTouches || !e.changedTouches.length) return;
       const endY = e.changedTouches[0].clientY;
-      if(endY - panelDragStartY > 55){
+      if(endY - backdropStartY > 45){
         document.body.classList.remove("panel-open");
       }
     }, {passive:true});
   }
 
-  let startY = 0;
-  let touchStartedInPanel = false;
-
-  document.addEventListener("touchstart", (e) => {
-    if(e.touches && e.touches.length){
-      startY = e.touches[0].clientY;
-      touchStartedInPanel = !!e.target.closest(".panel");
-    }
-  }, {passive:true});
-
-  document.addEventListener("touchend", (e) => {
-    if(!e.changedTouches || !e.changedTouches.length) return;
-
-    // 在设置面板内部滑动，只滚动设置内容，不触发收起。
-    if(touchStartedInPanel) return;
-
-    const endY = e.changedTouches[0].clientY;
-    const deltaY = endY - startY;
-
-    // 面板外空白区域：上滑打开，下滑收起。
-    if(deltaY < -45) document.body.classList.add("panel-open");
-    if(deltaY > 45) document.body.classList.remove("panel-open");
-  }, {passive:true});
-
-
-  const palettes = [
-    { bg:"#b9d886", card:"#151515" },
-    { bg:"#d9c7ff", card:"#17151f" },
-    { bg:"#f6c7b6", card:"#191514" },
-    { bg:"#b8d8ff", card:"#101722" },
-    { bg:"#f2d46f", card:"#19160d" },
-    { bg:"#c7ead7", card:"#102018" },
-    { bg:"#f4c6d7", card:"#20131a" },
-    { bg:"#c9d1ff", card:"#121522" },
-    { bg:"#e7e0d1", card:"#181713" },
-    { bg:"#bfe3df", card:"#0f1b1a" }
-  ];
-
+  // 默认显示当前月份，并随机初始化一组配色。
   const today = new Date();
   $("year").value = today.getFullYear();
   $("month").value = today.getMonth() + 1;
-
-  const picked = palettes[Math.floor(Math.random() * palettes.length)];
-  $("bgColor").value = picked.bg;
-  $("cardColor").value = picked.card;
-  $("holidayColor").value = picked.bg;
-
-  autoTextColor();
-  render();
+  randomizePalette();
 }
 
-init();
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", init);
+}else{
+  init();
+}
 </script>
 </body>
 </html>
