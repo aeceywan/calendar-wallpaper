@@ -3,7 +3,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>iOS 日历壁纸生成器</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
@@ -21,7 +21,9 @@
     --ui-sub:#6e6e73;
     --ui-blue:#007aff;
   }
+
   *{box-sizing:border-box}
+
   body{
     margin:0;
     font-family:Inter, "Noto Sans SC", -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
@@ -34,6 +36,7 @@
     grid-template-columns:390px 1fr;
     min-height:100vh;
   }
+
   .panel{
     margin:22px;
     padding:22px;
@@ -48,12 +51,14 @@
     height:calc(100vh - 44px);
     overflow:auto;
   }
+
   h1{
     font-size:24px;
     margin:0 0 20px;
     letter-spacing:-.04em;
     font-weight:700;
   }
+
   label{
     display:block;
     font-size:13px;
@@ -61,6 +66,7 @@
     margin:17px 0 8px;
     color:#2f2f33;
   }
+
   input,select,button{
     width:100%;
     height:44px;
@@ -73,11 +79,13 @@
     outline:none;
     transition:.18s ease;
   }
+
   input:focus,select:focus{
     border-color:rgba(0,122,255,.45);
     box-shadow:0 0 0 4px rgba(0,122,255,.12);
     background:#fff;
   }
+
   input[type=color]{
     padding:5px;
     cursor:pointer;
@@ -87,10 +95,12 @@
     border:0;
     border-radius:11px;
   }
+
   .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .control-row{display:grid;grid-template-columns:1fr 112px;gap:10px;align-items:center}
   .control-row input,.control-row button{margin-top:0}
   .inline-btn{height:44px}
+
   .range-wrap{
     display:grid;
     grid-template-columns:1fr 56px;
@@ -119,6 +129,7 @@
     text-align:right;
     font-variant-numeric:tabular-nums;
   }
+
   button{
     margin-top:18px;
     border:0;
@@ -128,20 +139,21 @@
     cursor:pointer;
     box-shadow:0 10px 24px rgba(0,122,255,.28);
   }
-  button:hover{transform:translateY(-1px)}
-  button:active{transform:translateY(0);filter:brightness(.96)}
+
   button.secondary{
     background:rgba(118,118,128,.12);
     color:var(--ui-blue);
     box-shadow:none;
     font-weight:600;
   }
+
   #download{
     color:#fff;
     height:48px;
     border-radius:17px;
     margin-top:24px;
   }
+
   .tip{
     font-size:12px;
     color:var(--ui-sub);
@@ -151,6 +163,7 @@
     background:rgba(118,118,128,.09);
     border-radius:18px;
   }
+
   .stage{
     padding:34px;
     display:flex;
@@ -158,6 +171,7 @@
     align-items:flex-start;
     overflow:auto;
   }
+
   #wallpaper{
     width:402px;
     height:970px;
@@ -170,6 +184,7 @@
       0 34px 90px rgba(0,0,0,.22),
       0 0 0 1px rgba(255,255,255,.36);
   }
+
   .calendar-card{
     position:absolute;
     left:0;
@@ -181,6 +196,7 @@
     padding:33.333px 51px 0; /* 顶部导出后为 100px */
     color:var(--text);
   }
+
   .header{
     display:flex;
     align-items:center;
@@ -189,6 +205,7 @@
     margin-bottom:20px; /* 导出后为 60px */
     white-space:nowrap;
   }
+
   .zh-month{
     color:var(--holiday);
     font-size:19px;
@@ -197,6 +214,7 @@
     align-items:center;
     gap:12px;
   }
+
   .zh-month::before{
     content:"";
     width:3px;
@@ -204,6 +222,7 @@
     background:var(--holiday);
     display:inline-block;
   }
+
   .en-month{
     font-size:30px;
     line-height:1;
@@ -211,6 +230,7 @@
     letter-spacing:1px;
     color:var(--text);
   }
+
   .wish{
     color:var(--holiday);
     font-size:15px;
@@ -218,6 +238,7 @@
     font-weight:700;
     letter-spacing:2px;
   }
+
   .week{
     display:grid;
     grid-template-columns:repeat(7,1fr);
@@ -226,13 +247,16 @@
     font-size:18px;
     font-weight:600;
   }
+
   .week .weekend{color:var(--holiday)}
+
   .days{
     display:grid;
     grid-template-columns:repeat(7,1fr);
     row-gap:var(--calendar-row-gap);
     text-align:center;
   }
+
   .day{
     min-height:36px;
     display:flex;
@@ -240,12 +264,14 @@
     align-items:center;
     justify-content:flex-start;
   }
+
   .date{
     font-size:18px;
     line-height:1;
     font-weight:500;
     color:var(--text);
   }
+
   .lunar{
     margin-top:5px;
     font-size:10px;
@@ -254,16 +280,218 @@
     white-space:pre-line;
     font-weight:400;
   }
+
   .holiday .date,.holiday .lunar{color:var(--holiday)}
   .empty{min-height:36px}
+  .mobile-bar{display:none;}
 
   @media(max-width:900px){
-    body{grid-template-columns:1fr}
-    .panel{position:relative;height:auto;top:auto}
-    .stage{padding:20px}
+    html,body{
+      width:100%;
+      height:100%;
+      margin:0;
+      overflow:hidden;
+      background:#fff;
+    }
+
+    body{
+      display:block;
+      min-height:100svh;
+    }
+
+    .stage{
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100svh;
+      padding:0 0 calc(112px + env(safe-area-inset-bottom));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      background:#fff;
+      z-index:1;
+    }
+
+    #wallpaper{
+      width:402px;
+      height:970px;
+      border-radius:72px;
+      box-shadow:0 28px 80px rgba(0,0,0,.10);
+      transform:translateY(-5svh) scale(.70);
+      transform-origin:center center;
+      transition:transform .34s cubic-bezier(.2,.8,.2,1), box-shadow .34s cubic-bezier(.2,.8,.2,1);
+      z-index:2;
+    }
+
+    .calendar-card{
+      border-radius:72px 72px 0 0;
+    }
+
+    .panel{
+      position:fixed !important;
+      left:8px !important;
+      right:8px !important;
+      bottom:0 !important;
+      top:auto !important;
+      width:auto !important;
+      height:58svh !important;
+      margin:0 !important;
+      padding:22px 18px calc(118px + env(safe-area-inset-bottom)) !important;
+      border-radius:32px 32px 0 0 !important;
+      z-index:30 !important;
+      transform:translateY(100%);
+      transition:transform .34s cubic-bezier(.2,.8,.2,1);
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+      background:rgba(248,248,252,.94);
+      border:1px solid rgba(255,255,255,.9);
+      box-shadow:0 -22px 80px rgba(0,0,0,.18);
+      backdrop-filter:blur(24px) saturate(1.25);
+      -webkit-backdrop-filter:blur(24px) saturate(1.25);
+    }
+
+    .panel::before{
+      content:"";
+      display:block;
+      width:46px;
+      height:5px;
+      border-radius:999px;
+      background:rgba(60,60,67,.24);
+      margin:0 auto 18px;
+    }
+
+    .panel h1{
+      font-size:28px;
+      line-height:1.12;
+      letter-spacing:-.052em;
+      margin:0 0 22px;
+    }
+
+    .panel label{
+      margin-top:18px;
+    }
+
+    .panel #download{
+      display:none !important;
+    }
+
+    body.panel-open .panel{
+      transform:translateY(0);
+    }
+
+    body.panel-open #wallpaper{
+      transform:translateY(-25svh) scale(.42);
+      box-shadow:0 20px 60px rgba(0,0,0,.10);
+    }
+
+    .row{
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
   }
+
+  @media(max-width:900px){
+    .mobile-bar{
+      display:flex;
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      padding:12px 18px calc(12px + env(safe-area-inset-bottom));
+      background:rgba(255,255,255,.92);
+      border-top-left-radius:28px;
+      border-top-right-radius:28px;
+      box-shadow:0 -16px 46px rgba(0,0,0,.14);
+      backdrop-filter:blur(22px) saturate(1.25);
+      -webkit-backdrop-filter:blur(22px) saturate(1.25);
+      gap:14px;
+      z-index:9999;
+    }
+
+    .mobile-bar #mobileDownloadBtn{
+      flex:1;
+      height:56px;
+      margin:0;
+      border:0;
+      border-radius:16px;
+      background:linear-gradient(180deg,#4f73ff 0%,#3156ff 100%);
+      color:#fff;
+      font-size:17px;
+      font-weight:700;
+      letter-spacing:.01em;
+      box-shadow:none;
+    }
+
+    .mobile-toggle{
+      width:102px;
+      height:56px;
+      margin:0;
+      border:0;
+      border-radius:16px;
+      background:transparent;
+      color:#111;
+      box-shadow:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      font-size:17px;
+      font-weight:700;
+      padding:0;
+    }
+
+    .mobile-arrow{
+      width:12px;
+      height:12px;
+      border-right:2.5px solid #111;
+      border-bottom:2.5px solid #111;
+      border-radius:1px;
+      transform:translateY(2px) rotate(225deg);
+      transition:transform .28s cubic-bezier(.2,.8,.2,1);
+    }
+
+    body.panel-open .mobile-arrow{
+      transform:translateY(-2px) rotate(45deg);
+    }
+
+    body.panel-open .mobile-toggle #toggleText::before{
+      content:"收起";
+      font-size:17px;
+    }
+
+    body.panel-open .mobile-toggle #toggleText{
+      font-size:0;
+    }
+
+    body.panel-open #wallpaper{
+      transform:translateY(-25svh) scale(.42);
+      box-shadow:0 20px 60px rgba(0,0,0,.10);
+    }
+  }
+
+
+  @media(max-width:900px){
+    .mobile-backdrop{
+      display:none;
+      position:fixed;
+      inset:0;
+      z-index:20;
+      background:rgba(255,255,255,0);
+    }
+
+    body.panel-open .mobile-backdrop{
+      display:block;
+    }
+
+    body.panel-open .panel{
+      transform:translateY(0);
+    }
+  }
+
 </style>
 </head>
+
 <body>
   <aside class="panel">
     <h1>iOS 日历壁纸生成器</h1>
@@ -279,7 +507,7 @@
       </div>
     </div>
 
-    <label style="display:flex;align-items:center;gap:8px;font-weight:400;">
+    <label style="display:flex;align-items:center;gap:8px;font-weight:700;">
       <input id="mondayStart" type="checkbox" style="width:18px;height:18px;margin:0;">
       星期一作为每周第一天
     </label>
@@ -302,24 +530,24 @@
     <label>3. 节假日期颜色</label>
     <div class="control-row">
       <input id="holidayColor" type="color" value="#b9d886">
-      <button id="syncHoliday" class="secondary inline-btn">自动调节</button>
+      <button id="syncHoliday" class="secondary inline-btn" type="button">自动调节</button>
     </div>
 
     <label>4. 普通日期颜色</label>
     <div class="control-row">
       <input id="textColor" type="color" value="#ffffff">
-      <button id="autoText" class="secondary inline-btn">自动调节</button>
+      <button id="autoText" class="secondary inline-btn" type="button">自动调节</button>
     </div>
 
-    <button id="download">下载 PNG 壁纸</button>
+    <button id="download" type="button">下载壁纸</button>
 
     <p class="tip">
-      默认画布：1206 × 2910 px。预览为等比缩小，下载时会按原始尺寸导出。阴历使用浏览器 Chinese Calendar 能力生成；常见中国节日已内置。
+      默认画布：1206 × 2910 px。预览为等比缩小，下载时会按原始尺寸导出。手机端点击下载后会打开图片，长按即可保存到相册。
     </p>
   </aside>
 
   <main class="stage">
-    <div id="wallpaper">
+<div id="wallpaper">
       <section class="calendar-card">
         <div class="header">
           <div class="zh-month" id="zhMonth">五月</div>
@@ -330,11 +558,21 @@
         <div class="days" id="days"></div>
       </section>
     </div>
+      <div id="mobileBackdrop" class="mobile-backdrop"></div>
+
+    <div class="mobile-bar">
+      <button id="mobileDownloadBtn" type="button">下载壁纸</button>
+      <button id="togglePanel" class="mobile-toggle" type="button">
+        <span id="toggleText">设置</span>
+        <span class="mobile-arrow"></span>
+      </button>
+    </div>
   </main>
 
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
 const $ = id => document.getElementById(id);
+
 const cnMonths = ["一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"];
 const enMonths = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
 const lunarDays = ["初一","初二","初三","初四","初五","初六","初七","初八","初九","初十","十一","十二","十三","十四","十五","十六","十七","十八","十九","二十","廿一","廿二","廿三","廿四","廿五","廿六","廿七","廿八","廿九","三十"];
@@ -353,13 +591,16 @@ function luminance(hex){
   const r=parseInt(c.slice(0,2),16), g=parseInt(c.slice(2,4),16), b=parseInt(c.slice(4,6),16);
   return (0.299*r + 0.587*g + 0.114*b) / 255;
 }
+
 function autoTextColor(){
   $("textColor").value = luminance($("cardColor").value) < 0.55 ? "#ffffff" : "#111111";
 }
+
 function formatWish(s){
   const v = (s || "富贵吉祥").slice(0,4);
   return v.slice(0,2) + "<br>" + v.slice(2,4);
 }
+
 function getLunarParts(date){
   try{
     const parts = new Intl.DateTimeFormat("zh-u-ca-chinese", {month:"long", day:"numeric"}).formatToParts(date);
@@ -369,16 +610,20 @@ function getLunarParts(date){
     let d = parseInt(dText,10);
     if(!m || !d) return null;
     return {m,d};
-  }catch(e){ return null; }
+  }catch(e){
+    return null;
+  }
 }
+
 function lunarText(date){
   const p = getLunarParts(date);
   if(!p) return "";
   if(p.d === 1) return lunarMonths[p.m-1];
   return lunarDays[p.d-1] || "";
 }
+
 function holidayName(date){
-  const y=date.getFullYear(), m=date.getMonth()+1, d=date.getDate();
+  const m=date.getMonth()+1, d=date.getDate();
   const solar = {
     "1-1":"元旦","2-14":"情人节","3-8":"妇女节","4-4":"清明","4-5":"清明",
     "5-1":"劳动节","5-4":"青年节","6-1":"儿童节","7-1":"建党节",
@@ -402,14 +647,15 @@ function holidayName(date){
   if(m===11 && day===4 && d>=22 && d<=28) return "感恩节";
   return "";
 }
+
 function render(){
   const year = +$("year").value;
   const month = +$("month").value;
-  const rowGapEl = $("rowGap");
-  const rowGapValueEl = $("rowGapValue");
-  const rowGapExport = rowGapEl ? +rowGapEl.value : 40;
-  if (rowGapValueEl) rowGapValueEl.textContent = rowGapExport + "px";
+  const rowGapExport = +$("rowGap").value;
+
+  $("rowGapValue").textContent = rowGapExport + "px";
   document.documentElement.style.setProperty("--calendar-row-gap", (rowGapExport / 3) + "px");
+
   document.documentElement.style.setProperty("--bg", $("bgColor").value);
   document.documentElement.style.setProperty("--card", $("cardColor").value);
   document.documentElement.style.setProperty("--holiday", $("holidayColor").value);
@@ -421,6 +667,7 @@ function render(){
 
   const days = $("days");
   days.innerHTML = "";
+
   const first = new Date(year, month-1, 1);
   const count = new Date(year, month, 0).getDate();
   const mondayStart = $("mondayStart").checked;
@@ -449,16 +696,8 @@ function render(){
     days.appendChild(div);
   }
 }
-["year","month","wish","bgColor","cardColor","holidayColor","textColor","mondayStart","rowGap"].forEach(id => {
-  const el = $(id);
-  if (el) el.addEventListener("input", render);
-});
-$("autoText").onclick = () => { autoTextColor(); render(); };
-$("syncHoliday").onclick = () => { $("holidayColor").value = $("bgColor").value; render(); };
-$("cardColor").addEventListener("input", () => { autoTextColor(); render(); });
-$("bgColor").addEventListener("input", () => { $("holidayColor").value = $("bgColor").value; render(); });
 
-$("download").onclick = async () => {
+async function downloadWallpaper(preOpenedWindow = null){
   const node = $("wallpaper");
   const canvas = await html2canvas(node, {
     backgroundColor:null,
@@ -467,25 +706,29 @@ $("download").onclick = async () => {
     height:970,
     useCORS:true
   });
+
   const out = document.createElement("canvas");
   out.width = 1206;
   out.height = 2910;
+
   const ctx = out.getContext("2d");
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(canvas,0,0,1206,2910);
+
   const dataUrl = out.toDataURL("image/png");
   const fileName = `iOS-calendar-wallpaper-${$("year").value}-${$("month").value}.png`;
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-  if (isMobile) {
-    const newWindow = window.open();
-    if (newWindow) {
-      newWindow.document.write(`
+  if(isMobile){
+    const win = preOpenedWindow || window.open("", "_blank");
+    if(win){
+      win.document.open();
+      win.document.write(`
         <!doctype html>
         <html lang="zh-CN">
         <head>
           <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
           <title>长按图片保存</title>
           <style>
             body{
@@ -521,21 +764,108 @@ $("download").onclick = async () => {
         </body>
         </html>
       `);
-      newWindow.document.close();
-    } else {
+      win.document.close();
+    }else{
       alert("浏览器阻止了新窗口，请允许弹窗后再试。");
     }
-  } else {
+  }else{
     const a = document.createElement("a");
     a.download = fileName;
     a.href = dataUrl;
     a.click();
   }
-};
+}
 
-autoTextColor();
-$("holidayColor").value = $("bgColor").value;
-render();
+function init(){
+  ["year","month","wish","bgColor","cardColor","holidayColor","textColor","mondayStart","rowGap"].forEach(id => {
+    $(id).addEventListener("input", render);
+  });
+
+  $("autoText").addEventListener("click", () => {
+    autoTextColor();
+    render();
+  });
+
+  $("syncHoliday").addEventListener("click", () => {
+    $("holidayColor").value = $("bgColor").value;
+    render();
+  });
+
+  $("cardColor").addEventListener("input", () => {
+    autoTextColor();
+    render();
+  });
+
+  $("bgColor").addEventListener("input", () => {
+    $("holidayColor").value = $("bgColor").value;
+    render();
+  });
+
+  $("download").addEventListener("click", () => {
+    downloadWallpaper();
+  });
+
+  $("mobileDownloadBtn").addEventListener("click", (e) => {
+    e.preventDefault();
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const preOpenedWindow = isMobile ? window.open("", "_blank") : null;
+    if(preOpenedWindow){
+      preOpenedWindow.document.write("<p style='font-family:-apple-system;padding:24px;'>正在生成壁纸...</p>");
+    }
+    downloadWallpaper(preOpenedWindow);
+  });
+
+  $("togglePanel").addEventListener("click", (e) => {
+    e.preventDefault();
+    document.body.classList.toggle("panel-open");
+  });
+
+  const mobileBackdrop = $("mobileBackdrop");
+  if(mobileBackdrop){
+    mobileBackdrop.addEventListener("click", () => {
+      document.body.classList.remove("panel-open");
+    });
+  }
+
+  let panelDragStartY = 0;
+  const panelEl = document.querySelector(".panel");
+  if(panelEl){
+    panelEl.addEventListener("touchstart", (e) => {
+      if(e.touches && e.touches.length){
+        panelDragStartY = e.touches[0].clientY;
+      }
+    }, {passive:true});
+
+    panelEl.addEventListener("touchend", (e) => {
+      if(!e.changedTouches || !e.changedTouches.length) return;
+      const endY = e.changedTouches[0].clientY;
+      if(endY - panelDragStartY > 55){
+        document.body.classList.remove("panel-open");
+      }
+    }, {passive:true});
+  }
+
+  let startY = 0;
+  document.addEventListener("touchstart", (e) => {
+    if(e.touches && e.touches.length){
+      startY = e.touches[0].clientY;
+    }
+  }, {passive:true});
+
+  document.addEventListener("touchend", (e) => {
+    if(!e.changedTouches || !e.changedTouches.length) return;
+    const endY = e.changedTouches[0].clientY;
+    const deltaY = endY - startY;
+    if(deltaY < -45) document.body.classList.add("panel-open");
+    if(deltaY > 45) document.body.classList.remove("panel-open");
+  }, {passive:true});
+
+  autoTextColor();
+  $("holidayColor").value = $("bgColor").value;
+  render();
+}
+
+init();
 </script>
 </body>
 </html>
