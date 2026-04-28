@@ -721,6 +721,7 @@ async function downloadWallpaper(preOpenedWindow = null){
 
   if(isMobile){
     const win = preOpenedWindow || window.open("", "_blank");
+
     if(win){
       win.document.open();
       win.document.write(`
@@ -728,39 +729,115 @@ async function downloadWallpaper(preOpenedWindow = null){
         <html lang="zh-CN">
         <head>
           <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-          <title>长按图片保存</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+          <title>保存壁纸</title>
           <style>
-            body{
+            *{box-sizing:border-box}
+            html,body{
               margin:0;
-              min-height:100vh;
-              background:#000;
+              width:100%;
+              min-height:100%;
+              background:#0b0b0d;
               color:#fff;
-              font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",Arial,sans-serif;
+              font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",Arial,sans-serif;
+            }
+            body{
+              min-height:100svh;
+              padding:calc(22px + env(safe-area-inset-top)) 18px calc(24px + env(safe-area-inset-bottom));
               display:flex;
               flex-direction:column;
               align-items:center;
-              justify-content:center;
-              padding:20px;
+              justify-content:flex-start;
+              overflow:auto;
             }
-            img{
-              width:min(100%,420px);
-              height:auto;
-              border-radius:24px;
-              box-shadow:0 20px 70px rgba(255,255,255,.16);
+            .tips{
+              width:100%;
+              max-width:430px;
+              margin:0 auto 16px;
+              padding:16px 16px 14px;
+              border-radius:22px;
+              background:rgba(255,255,255,.10);
+              border:1px solid rgba(255,255,255,.14);
+              backdrop-filter:blur(18px);
+              -webkit-backdrop-filter:blur(18px);
+              text-align:center;
+            }
+            h1{
+              margin:0 0 6px;
+              font-size:20px;
+              line-height:1.25;
+              letter-spacing:-.02em;
             }
             p{
-              margin:18px 0 0;
-              font-size:15px;
-              color:rgba(255,255,255,.82);
-              text-align:center;
-              line-height:1.6;
+              margin:0;
+              font-size:14px;
+              line-height:1.55;
+              color:rgba(255,255,255,.72);
+            }
+            .image-wrap{
+              width:100%;
+              display:flex;
+              justify-content:center;
+              align-items:flex-start;
+              padding-bottom:18px;
+            }
+            img{
+              display:block;
+              width:min(82vw, 390px);
+              max-width:100%;
+              height:auto;
+              border-radius:28px;
+              box-shadow:0 24px 80px rgba(0,0,0,.55);
+              -webkit-user-select:auto;
+              user-select:auto;
+              -webkit-touch-callout:default;
+            }
+            .actions{
+              position:sticky;
+              bottom:0;
+              width:100%;
+              max-width:430px;
+              display:flex;
+              gap:12px;
+              padding-top:10px;
+              background:linear-gradient(180deg,rgba(11,11,13,0),#0b0b0d 38%);
+            }
+            a,button{
+              flex:1;
+              height:52px;
+              border:0;
+              border-radius:16px;
+              font-size:16px;
+              font-weight:700;
+              text-decoration:none;
+              display:flex;
+              align-items:center;
+              justify-content:center;
+            }
+            a{
+              background:linear-gradient(180deg,#4f73ff 0%,#3156ff 100%);
+              color:#fff;
+            }
+            button{
+              background:rgba(255,255,255,.12);
+              color:#fff;
             }
           </style>
         </head>
         <body>
-          <img src="${dataUrl}" alt="生成的壁纸">
-          <p>长按图片，选择“保存到照片”</p>
+          <div class="tips">
+            <h1>长按图片保存壁纸</h1>
+            <p>在图片上长按，选择「保存到照片」。如果长按没有反应，请点「打开原图」后再长按保存。</p>
+          </div>
+
+          <div class="image-wrap">
+            <img id="wallpaperImage" src="${dataUrl}" alt="生成的壁纸">
+          </div>
+
+          <div class="actions">
+            <a href="${dataUrl}" target="_blank" rel="noopener">打开原图</a>
+            <button onclick="window.close()">关闭</button>
+          </div>
         </body>
         </html>
       `);
