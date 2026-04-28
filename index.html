@@ -850,7 +850,7 @@ function drawWallpaperCanvas(){
   const year = +$("year").value;
   const month = +$("month").value;
   const mondayStart = $("mondayStart").checked;
-  const rowGap = +$("rowGap").value;
+  const rowGap = +$("rowGap").value; // 导出尺寸下的行间距 px
 
   const canvas = document.createElement("canvas");
   canvas.width = W;
@@ -923,7 +923,7 @@ function drawWallpaperCanvas(){
   const blankCount = mondayStart ? ((first.getDay() + 6) % 7) : first.getDay();
 
   const dateStartY = weekY + 104; // roughly 53px gap + date visual start
-  const rowStep = 96 + rowGap;    // date block height + user row gap
+  const rowStep = 108 + rowGap;   // 与预览一致：36px 日期格高度 × 3 + 行间距
 
   for(let d=1; d<=count; d++){
     const index = blankCount + d - 1;
