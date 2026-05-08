@@ -48,6 +48,17 @@
     select#year,select#month{font-size:16px;font-weight:600;text-align:center;text-align-last:center}
   }
 </style>
+<!-- Google Analytics 4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  // 把 G-XXXXXXXXXX 替换成你自己的 GA4 测量 ID
+  gtag('config', 'G-XXXXXXXXXX');
+</script>
+
 </head>
 <body>
   <aside class="panel">
@@ -115,7 +126,17 @@ function drawWallpaper(ctx){
 function render(){$("rowGapValue").textContent=$("rowGap").value+"px";drawWallpaper($("previewCanvas").getContext("2d"))}
 function randomizePalette(){const palettes=[{bg:"#b9d886",card:"#151515"},{bg:"#d9c7ff",card:"#17151f"},{bg:"#f6c7b6",card:"#191514"},{bg:"#b8d8ff",card:"#101722"},{bg:"#f2d46f",card:"#19160d"},{bg:"#c7ead7",card:"#102018"},{bg:"#f4c6d7",card:"#20131a"},{bg:"#c9d1ff",card:"#121522"},{bg:"#bfe3df",card:"#0f1b1a"},{bg:"#ffb86b",card:"#17120d"},{bg:"#8be9fd",card:"#101820"},{bg:"#ff7aa2",card:"#201018"},{bg:"#ff6b6b",card:"#fff6f2",holiday:"#d94d4d"},{bg:"#ff9f1c",card:"#fff7e6",holiday:"#c87800"},{bg:"#2ec4b6",card:"#effffc",holiday:"#139888"},{bg:"#3a86ff",card:"#f0f6ff",holiday:"#2368d8"},{bg:"#8338ec",card:"#f7f0ff",holiday:"#6c2bd9"},{bg:"#ff006e",card:"#fff0f6",holiday:"#d6005d"},{bg:"#00b4d8",card:"#eefbff",holiday:"#008fb0"},{bg:"#06d6a0",card:"#effff9",holiday:"#00a77a"},{bg:"#fb5607",card:"#fff1e8",holiday:"#d74700"},{bg:"#7bdff2",card:"#fbfeff",holiday:"#2898ad"},{bg:"#f15bb5",card:"#fff0fa",holiday:"#c93d91"},{bg:"#fee440",card:"#fffce6",holiday:"#b99b00"},{bg:"#9b5de5",card:"#f7f0ff",holiday:"#7442bd"},{bg:"#e76f51",card:"#fff4ef",holiday:"#b94f37"},{bg:"#2a9d8f",card:"#effbf8",holiday:"#197d72"},{bg:"#e9c46a",card:"#fff9e8",holiday:"#b28b23"},{bg:"#f4a261",card:"#fff4e8",holiday:"#c67835"},{bg:"#a8dadc",card:"#fbffff",holiday:"#4b9ea0"},{bg:"#ffafcc",card:"#fff5fa",holiday:"#d96f9c"},{bg:"#bde0fe",card:"#f7fbff",holiday:"#5b9bd8"}];const p=palettes[Math.floor(Math.random()*palettes.length)];$("bgColor").value=p.bg;$("cardColor").value=p.card;$("holidayColor").value=p.holiday||p.bg;autoTextColor();render()}
 function saveBlob(blob,filename){const url=URL.createObjectURL(blob),isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);if(isMobile){const win=window.open("","_blank");if(win){win.location.href=url}else{window.location.href=url}}else{const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove()}setTimeout(()=>URL.revokeObjectURL(url),60000)}
-function downloadWallpaper(){const canvas=$("previewCanvas"),filename=`calendar-wallpaper-${$("year").value}-${$("month").value}.png`;if(canvas.toBlob){canvas.toBlob(blob=>{if(blob){saveBlob(blob,filename)}else{const a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download=filename;a.click()}},"image/png")}else{const a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download=filename;a.click()}}
+function downloadWallpaper(){
+  if(typeof gtag === "function"){
+    gtag("event", "download_wallpaper_click", {
+      event_category: "wallpaper",
+      event_label: "download_button",
+      year: $("year").value,
+      month: $("month").value
+    });
+  }
+
+  const canvas=$("previewCanvas"),filename=`calendar-wallpaper-${$("year").value}-${$("month").value}.png`;if(canvas.toBlob){canvas.toBlob(blob=>{if(blob){saveBlob(blob,filename)}else{const a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download=filename;a.click()}},"image/png")}else{const a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download=filename;a.click()}}
 function init(){const today=new Date();$("year").value=today.getFullYear();$("month").value=today.getMonth()+1;["year","month","wish","bgColor","cardColor","holidayColor","textColor","mondayStart","rowGap"].forEach(id=>{$(id).addEventListener("input",render);$(id).addEventListener("change",render)});$("autoText").addEventListener("click",()=>{autoTextColor();render()});$("syncHoliday").addEventListener("click",()=>{$("holidayColor").value=$("bgColor").value;render()});$("cardColor").addEventListener("input",()=>{autoTextColor();render()});$("bgColor").addEventListener("input",()=>{$("holidayColor").value=$("bgColor").value;render()});$("download").addEventListener("click",downloadWallpaper);$("panelDownloadBtn").addEventListener("click",downloadWallpaper);$("mobileDownloadBtn").addEventListener("click",downloadWallpaper);$("randomColorBtn").addEventListener("click",e=>{e.preventDefault();randomizePalette()});$("togglePanel").addEventListener("click",e=>{e.preventDefault();document.body.classList.toggle("panel-open")});const mobileBackdrop=$("mobileBackdrop");mobileBackdrop.addEventListener("click",()=>{document.body.classList.remove("panel-open")});let backdropStartY=0;mobileBackdrop.addEventListener("touchstart",e=>{if(e.touches&&e.touches.length)backdropStartY=e.touches[0].clientY},{passive:true});mobileBackdrop.addEventListener("touchend",e=>{if(!e.changedTouches||!e.changedTouches.length)return;const endY=e.changedTouches[0].clientY;if(endY-backdropStartY>45)document.body.classList.remove("panel-open")},{passive:true});randomizePalette()}
 if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init)}else{init()}
 </script>
