@@ -117,14 +117,14 @@ function drawWallpaper(ctx){
  drawText(ctx,wish.slice(2,4),centerX+255,headerCenterY+27,'700 42px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif',holiday);
  const contentX=153,contentW=900,colW=contentW/7,weekY=headerCenterY+170;
  const weekLabels=mondayStart?["M","T","W","T","F","S","S"]:["S","M","T","W","T","F","S"];
- for(let i=0;i<7;i++){const isWeekendCol=mondayStart?i>=5:(i===0||i===6);drawText(ctx,weekLabels[i],contentX+colW*i+colW/2,weekY,'600 52px -apple-system,BlinkMacSystemFont,Arial,sans-serif',isWeekendCol?holiday:text)}
+ for(let i=0;i<7;i++){const isWeekendCol=mondayStart?i>=5:(i===0||i===6);drawText(ctx,weekLabels[i],contentX+colW*i+colW/2,weekY,'600 46px -apple-system,BlinkMacSystemFont,Arial,sans-serif',isWeekendCol?holiday:text)}
  const first=new Date(year,month-1,1),count=new Date(year,month,0).getDate(),blankCount=mondayStart?((first.getDay()+6)%7):first.getDay();
  const dateStartY=weekY+90,rowStep=108+rowGap;
  for(let d=1;d<=count;d++){
    const index=blankCount+d-1,col=index%7,row=Math.floor(index/7),x=contentX+colW*col+colW/2,dateY=dateStartY+row*rowStep;
    const dateObj=new Date(year,month-1,d),h=holidayName(dateObj),isWeekend=dateObj.getDay()===0||dateObj.getDay()===6,color=(h||isWeekend)?holiday:text;
-   drawText(ctx,String(d),x,dateY,'500 58px -apple-system,BlinkMacSystemFont,Arial,sans-serif',color,"center","top");
-   const sub=h?h:lunarText(dateObj);if(sub){const lunarY=dateY+69;if(sub.length>3){drawText(ctx,sub.slice(0,2),x,lunarY,'400 30px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif',color,"center","top");drawText(ctx,sub.slice(2),x,lunarY+34,'400 30px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif',color,"center","top")}else{drawText(ctx,sub,x,lunarY,'400 30px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif',color,"center","top")}}
+   drawText(ctx,String(d),x,dateY,'400 52px -apple-system,BlinkMacSystemFont,Arial,sans-serif',color,"center","top");
+   const sub=h?h:lunarText(dateObj);if(sub){const lunarY=dateY+69;if(sub.length>3){drawText(ctx,sub.slice(0,2),x,lunarY,'400 28px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif',color,"center","top");drawText(ctx,sub.slice(2),x,lunarY+34,'400 28px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif',color,"center","top")}else{drawText(ctx,sub,x,lunarY,'400 28px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif',color,"center","top")}}
  }
 }
 function render(){$("rowGapValue").textContent=$("rowGap").value+"px";drawWallpaper($("previewCanvas").getContext("2d"))}
