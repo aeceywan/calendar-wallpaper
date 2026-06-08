@@ -32,6 +32,13 @@
   #previewCanvas{width:100%;height:100%;display:block}
   .random-color-btn{position:absolute;top:34px;right:34px;width:44px;height:44px;border:0;border-radius:999px;padding:0;margin:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.76);color:#111;box-shadow:0 8px 24px rgba(0,0,0,.10);backdrop-filter:blur(20px) saturate(1.2);-webkit-backdrop-filter:blur(20px) saturate(1.2);z-index:10}
   .random-color-btn svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+
+  .mode-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:-4px 0 20px;padding:5px;border-radius:18px;background:rgba(118,118,128,.12)}
+  .mode-tab{height:42px;margin:0;border:0;border-radius:14px;background:transparent;color:var(--ui-sub);font-size:14px;font-weight:700;box-shadow:none}
+  .mode-tab.active{background:rgba(255,255,255,.86);color:var(--ui-text);box-shadow:0 6px 18px rgba(0,0,0,.08)}
+  .settings-group{display:block}
+  .settings-group.hidden{display:none}
+
   .mobile-bar,.mobile-backdrop{display:none}
   @media(max-width:900px){
     html,body{width:100%;height:100%;overflow:hidden;background:#fff} body{display:block;min-height:100dvh}
@@ -39,7 +46,7 @@
     .canvas-wrap{width:402px;height:970px;border-radius:72px;box-shadow:0 28px 80px rgba(0,0,0,.10);transform:translateY(-5dvh) scale(.70);transform-origin:center center;transition:transform .34s cubic-bezier(.2,.8,.2,1),box-shadow .34s cubic-bezier(.2,.8,.2,1);z-index:2}
     .panel{position:fixed!important;left:8px!important;right:8px!important;bottom:0!important;top:auto!important;width:auto!important;height:58dvh!important;margin:0!important;padding:22px 18px calc(118px + env(safe-area-inset-bottom))!important;border-radius:32px 32px 0 0!important;z-index:30!important;transform:translateY(100%);transition:transform .34s cubic-bezier(.2,.8,.2,1);overflow:auto;-webkit-overflow-scrolling:touch;background:rgba(248,248,252,.94);border:1px solid rgba(255,255,255,.9);box-shadow:0 -22px 80px rgba(0,0,0,.18);backdrop-filter:blur(24px) saturate(1.25);-webkit-backdrop-filter:blur(24px) saturate(1.25)}
     .panel::before{content:"";display:block;width:46px;height:5px;border-radius:999px;background:rgba(60,60,67,.24);margin:0 auto 18px}
-    .panel h1{font-size:28px;line-height:1.12;letter-spacing:-.052em;margin:0 0 22px}.panel label{margin-top:18px}.panel #download{display:none!important}
+    .panel h1{font-size:28px;line-height:1.12;letter-spacing:-.052em;margin:0 0 22px}.panel label{margin-top:18px}.panel #download,.panel #homeDownload{display:none!important}
     .panel-download-btn{display:block;width:100%;height:56px;margin-top:24px;margin-bottom:8px;border:0;border-radius:18px;background:linear-gradient(180deg,#4f73ff 0%,#3156ff 100%);color:#fff;font-size:17px;font-weight:700;box-shadow:0 12px 30px rgba(0,85,255,.25)}
     .mobile-backdrop{display:none;position:fixed;left:0;right:0;top:0;height:42dvh;z-index:20;background:rgba(255,255,255,0);pointer-events:none}
     body.panel-open .mobile-backdrop{display:block;pointer-events:auto} body.panel-open .panel{transform:translateY(0)} body.panel-open .canvas-wrap{transform:translateY(-25dvh) scale(.42);box-shadow:0 20px 60px rgba(0,0,0,.10)}
@@ -67,15 +74,29 @@
 <body>
   <aside class="panel">
     <h1>日历壁纸生成器</h1>
-    <div class="row"><div><label>年份</label><select id="year"></select></div><div><label>月份</label><select id="month"></select></div></div>
-    <label style="display:flex;align-items:center;gap:8px;font-weight:700;"><input id="mondayStart" type="checkbox" style="width:18px;height:18px;margin:0;">星期一作为每周第一天</label>
-    <label>日历行间距</label><div class="range-wrap"><input id="rowGap" type="range" min="20" max="70" step="1" value="40"><span id="rowGapValue">40px</span></div>
-    <label>祝福语</label><input id="wish" maxlength="4" value="富贵吉祥">
-    <label>1. 背景颜色</label><input id="bgColor" type="color" value="#b9d886">
-    <label>2. 日历背景颜色</label><input id="cardColor" type="color" value="#151515">
-    <label>3. 节假日期颜色</label><div class="control-row"><input id="holidayColor" type="color" value="#b9d886"><button id="syncHoliday" class="secondary" type="button">自动调节</button></div>
-    <label>4. 普通日期颜色</label><div class="control-row"><input id="textColor" type="color" value="#ffffff"><button id="autoText" class="secondary" type="button">自动调节</button></div>
-    <button id="download" type="button">下载壁纸</button><button id="panelDownloadBtn" class="panel-download-btn" type="button">下载壁纸</button>
+    <div class="mode-tabs">
+      <button id="lockTab" class="mode-tab active" type="button">锁定屏幕</button>
+      <button id="homeTab" class="mode-tab" type="button">手机墙纸</button>
+    </div>
+
+    <div id="lockSettings" class="settings-group">
+      <div class="row"><div><label>年份</label><select id="year"></select></div><div><label>月份</label><select id="month"></select></div></div>
+      <label style="display:flex;align-items:center;gap:8px;font-weight:700;"><input id="mondayStart" type="checkbox" style="width:18px;height:18px;margin:0;">星期一作为每周第一天</label>
+      <label>日历行间距</label><div class="range-wrap"><input id="rowGap" type="range" min="20" max="70" step="1" value="40"><span id="rowGapValue">40px</span></div>
+      <label>祝福语</label><input id="wish" maxlength="4" value="富贵吉祥">
+      <label>1. 背景颜色</label><input id="bgColor" type="color" value="#b9d886">
+      <label>2. 日历背景颜色</label><input id="cardColor" type="color" value="#151515">
+      <label>3. 节假日期颜色</label><div class="control-row"><input id="holidayColor" type="color" value="#b9d886"><button id="syncHoliday" class="secondary" type="button">自动调节</button></div>
+      <label>4. 普通日期颜色</label><div class="control-row"><input id="textColor" type="color" value="#ffffff"><button id="autoText" class="secondary" type="button">自动调节</button></div>
+      <button id="download" type="button">下载壁纸</button><button id="panelDownloadBtn" class="panel-download-btn" type="button">下载壁纸</button>
+    </div>
+
+    <div id="homeSettings" class="settings-group hidden">
+      <label>背景颜色1</label><input id="homeColor1" type="color" value="#afdb8a">
+      <label>背景颜色2</label><input id="homeColor2" type="color" value="#000000">
+      <button id="homeDownload" type="button">下载壁纸</button><button id="homePanelDownloadBtn" class="panel-download-btn" type="button">下载壁纸</button>
+    </div>
+
     <p class="tip">稳定版：预览和下载使用同一个 Canvas，不再截图页面，兼容不同手机浏览器。</p>
   </aside>
   <main class="stage">
@@ -127,8 +148,47 @@ function drawWallpaper(ctx){
    const sub=h?h:lunarText(dateObj);if(sub){const lunarY=dateY+69;if(sub.length>3){drawText(ctx,sub.slice(0,2),x,lunarY,'400 28px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif',color,"center","top");drawText(ctx,sub.slice(2),x,lunarY+34,'400 28px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif',color,"center","top")}else{drawText(ctx,sub,x,lunarY,'400 28px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif',color,"center","top")}}
  }
 }
-function render(){$("rowGapValue").textContent=$("rowGap").value+"px";drawWallpaper($("previewCanvas").getContext("2d"))}
-function randomizePalette(){const palettes=[{bg:"#b9d886",card:"#151515"},{bg:"#d9c7ff",card:"#17151f"},{bg:"#f6c7b6",card:"#191514"},{bg:"#b8d8ff",card:"#101722"},{bg:"#f2d46f",card:"#19160d"},{bg:"#c7ead7",card:"#102018"},{bg:"#f4c6d7",card:"#20131a"},{bg:"#c9d1ff",card:"#121522"},{bg:"#bfe3df",card:"#0f1b1a"},{bg:"#ffb86b",card:"#17120d"},{bg:"#8be9fd",card:"#101820"},{bg:"#ff7aa2",card:"#201018"},{bg:"#ff6b6b",card:"#fff6f2",holiday:"#d94d4d"},{bg:"#ff9f1c",card:"#fff7e6",holiday:"#c87800"},{bg:"#2ec4b6",card:"#effffc",holiday:"#139888"},{bg:"#3a86ff",card:"#f0f6ff",holiday:"#2368d8"},{bg:"#8338ec",card:"#f7f0ff",holiday:"#6c2bd9"},{bg:"#ff006e",card:"#fff0f6",holiday:"#d6005d"},{bg:"#00b4d8",card:"#eefbff",holiday:"#008fb0"},{bg:"#06d6a0",card:"#effff9",holiday:"#00a77a"},{bg:"#fb5607",card:"#fff1e8",holiday:"#d74700"},{bg:"#7bdff2",card:"#fbfeff",holiday:"#2898ad"},{bg:"#f15bb5",card:"#fff0fa",holiday:"#c93d91"},{bg:"#fee440",card:"#fffce6",holiday:"#b99b00"},{bg:"#9b5de5",card:"#f7f0ff",holiday:"#7442bd"},{bg:"#e76f51",card:"#fff4ef",holiday:"#b94f37"},{bg:"#2a9d8f",card:"#effbf8",holiday:"#197d72"},{bg:"#e9c46a",card:"#fff9e8",holiday:"#b28b23"},{bg:"#f4a261",card:"#fff4e8",holiday:"#c67835"},{bg:"#a8dadc",card:"#fbffff",holiday:"#4b9ea0"},{bg:"#ffafcc",card:"#fff5fa",holiday:"#d96f9c"},{bg:"#bde0fe",card:"#f7fbff",holiday:"#5b9bd8"}];const p=palettes[Math.floor(Math.random()*palettes.length)];$("bgColor").value=p.bg;$("cardColor").value=p.card;$("holidayColor").value=p.holiday||p.bg;autoTextColor();render()}
+let activeMode="lock";
+const LOCK_W=1206, LOCK_H=2910, HOME_W=941, HOME_H=2048;
+
+function mixWithWhite(hex,ratio){
+ const c=hex.replace("#","");
+ const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);
+ const nr=Math.round(r*(1-ratio)+255*ratio),ng=Math.round(g*(1-ratio)+255*ratio),nb=Math.round(b*(1-ratio)+255*ratio);
+ return "#"+[nr,ng,nb].map(v=>v.toString(16).padStart(2,"0")).join("");
+}
+function bottomRoundRect(ctx,x,y,w,h,r){
+ const radius=Math.min(r,w/2,h/2);
+ ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y);ctx.lineTo(x+w,y+h-radius);ctx.quadraticCurveTo(x+w,y+h,x+w-radius,y+h);ctx.lineTo(x+radius,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-radius);ctx.lineTo(x,y);ctx.closePath();
+}
+function drawHomeWallpaper(ctx){
+ const W=HOME_W,H=HOME_H,color1=$("homeColor1").value,color2=$("homeColor2").value,pill=mixWithWhite(color1,.20);
+ ctx.clearRect(0,0,W,H);ctx.fillStyle=color2;ctx.fillRect(0,0,W,H);
+ const topH=737/874*H, topR=42/402*W;
+ ctx.fillStyle=color1;bottomRoundRect(ctx,0,0,W,topH,topR);ctx.fill();
+ const pillX=15/402*W,pillY=757/874*H,pillW=372/402*W,pillH=102/874*H,pillR=pillH/2;
+ ctx.fillStyle=pill;roundRect(ctx,pillX,pillY,pillW,pillH,pillR);ctx.fill();
+}
+function setCanvasSizeForMode(){
+ const canvas=$("previewCanvas"),wrap=document.querySelector(".canvas-wrap");
+ if(activeMode==="home"){canvas.width=HOME_W;canvas.height=HOME_H;wrap.style.height=(402*HOME_H/HOME_W)+"px";}
+ else{canvas.width=LOCK_W;canvas.height=LOCK_H;wrap.style.height="970px";}
+}
+function render(){
+ $("rowGapValue").textContent=$("rowGap").value+"px";
+ setCanvasSizeForMode();
+ const ctx=$("previewCanvas").getContext("2d");
+ if(activeMode==="home")drawHomeWallpaper(ctx);else drawWallpaper(ctx);
+}
+function randomizePalette(){
+ if(activeMode==="home"){
+   const palettes=[["#afdb8a","#000000"],["#c7ead7","#101915"],["#bde0fe","#05070d"],["#ffafcc","#12070c"],["#d9c7ff","#090712"],["#fee440","#111006"],["#a8dadc","#071112"],["#f4c6d7","#140b10"],["#c9d1ff","#080a12"],["#ffb86b","#120c05"],["#7bdff2","#061114"],["#e9c46a","#151007"]];
+   const p=palettes[Math.floor(Math.random()*palettes.length)];
+   $("homeColor1").value=p[0];$("homeColor2").value=p[1];render();return;
+ }
+ const palettes=[{bg:"#b9d886",card:"#151515"},{bg:"#d9c7ff",card:"#17151f"},{bg:"#f6c7b6",card:"#191514"},{bg:"#b8d8ff",card:"#101722"},{bg:"#f2d46f",card:"#19160d"},{bg:"#c7ead7",card:"#102018"},{bg:"#f4c6d7",card:"#20131a"},{bg:"#c9d1ff",card:"#121522"},{bg:"#bfe3df",card:"#0f1b1a"},{bg:"#ffb86b",card:"#17120d"},{bg:"#8be9fd",card:"#101820"},{bg:"#ff7aa2",card:"#201018"},{bg:"#ff6b6b",card:"#fff6f2",holiday:"#d94d4d"},{bg:"#ff9f1c",card:"#fff7e6",holiday:"#c87800"},{bg:"#2ec4b6",card:"#effffc",holiday:"#139888"},{bg:"#3a86ff",card:"#f0f6ff",holiday:"#2368d8"},{bg:"#8338ec",card:"#f7f0ff",holiday:"#6c2bd9"},{bg:"#ff006e",card:"#fff0f6",holiday:"#d6005d"},{bg:"#00b4d8",card:"#eefbff",holiday:"#008fb0"},{bg:"#06d6a0",card:"#effff9",holiday:"#00a77a"},{bg:"#fb5607",card:"#fff1e8",holiday:"#d74700"},{bg:"#7bdff2",card:"#fbfeff",holiday:"#2898ad"},{bg:"#f15bb5",card:"#fff0fa",holiday:"#c93d91"},{bg:"#fee440",card:"#fffce6",holiday:"#b99b00"},{bg:"#9b5de5",card:"#f7f0ff",holiday:"#7442bd"},{bg:"#e76f51",card:"#fff4ef",holiday:"#b94f37"},{bg:"#2a9d8f",card:"#effbf8",holiday:"#197d72"},{bg:"#e9c46a",card:"#fff9e8",holiday:"#b28b23"},{bg:"#f4a261",card:"#fff4e8",holiday:"#c67835"},{bg:"#a8dadc",card:"#fbffff",holiday:"#4b9ea0"},{bg:"#ffafcc",card:"#fff5fa",holiday:"#d96f9c"},{bg:"#bde0fe",card:"#f7fbff",holiday:"#5b9bd8"}];
+ const p=palettes[Math.floor(Math.random()*palettes.length)];$("bgColor").value=p.bg;$("cardColor").value=p.card;$("holidayColor").value=p.holiday||p.bg;autoTextColor();render()
+}
 function saveBlob(blob,filename){const url=URL.createObjectURL(blob),isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);if(isMobile){const win=window.open("","_blank");if(win){win.location.href=url}else{window.location.href=url}}else{const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove()}setTimeout(()=>URL.revokeObjectURL(url),60000)}
 
 function trackEvent(eventName, label){
@@ -143,18 +203,30 @@ function trackEvent(eventName, label){
 }
 
 function downloadWallpaper(){
-  trackEvent("download_wallpaper_click", "download_button");
+  if(activeMode==="home"){
+    trackEvent("phone_wallpaper_download_click", "phone_wallpaper_download_button");
+  }else{
+    trackEvent("download_wallpaper_click", "download_button");
+  }
 
-  const canvas=$("previewCanvas"),filename=`calendar-wallpaper-${$("year").value}-${$("month").value}.png`;if(canvas.toBlob){canvas.toBlob(blob=>{if(blob){saveBlob(blob,filename)}else{const a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download=filename;a.click()}},"image/png")}else{const a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download=filename;a.click()}}
-function init(){const today=new Date();$("year").value=today.getFullYear();$("month").value=today.getMonth()+1;["year","month","wish","bgColor","cardColor","holidayColor","textColor","mondayStart","rowGap"].forEach(id=>{$(id).addEventListener("input",render);$(id).addEventListener("change",render)});$("autoText").addEventListener("click",()=>{autoTextColor();render()});$("syncHoliday").addEventListener("click",()=>{$("holidayColor").value=$("bgColor").value;render()});$("cardColor").addEventListener("input",()=>{autoTextColor();render()});$("bgColor").addEventListener("input",()=>{$("holidayColor").value=$("bgColor").value;render()});$("download").addEventListener("click",downloadWallpaper);$("panelDownloadBtn").addEventListener("click",downloadWallpaper);$("mobileDownloadBtn").addEventListener("click",downloadWallpaper);$("randomColorBtn").addEventListener("click",e=>{
+  const canvas=$("previewCanvas"),filename=activeMode==="home"?`phone-wallpaper.png`:`calendar-wallpaper-${$("year").value}-${$("month").value}.png`;if(canvas.toBlob){canvas.toBlob(blob=>{if(blob){saveBlob(blob,filename)}else{const a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download=filename;a.click()}},"image/png")}else{const a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download=filename;a.click()}}
+function switchMode(mode){
+  activeMode=mode;
+  $("lockTab").classList.toggle("active",mode==="lock");
+  $("homeTab").classList.toggle("active",mode==="home");
+  $("lockSettings").classList.toggle("hidden",mode!=="lock");
+  $("homeSettings").classList.toggle("hidden",mode!=="home");
+  render();
+}
+function init(){const today=new Date();$("year").value=today.getFullYear();$("month").value=today.getMonth()+1;["year","month","wish","bgColor","cardColor","holidayColor","textColor","mondayStart","rowGap","homeColor1","homeColor2"].forEach(id=>{$(id).addEventListener("input",render);$(id).addEventListener("change",render)});$("autoText").addEventListener("click",()=>{autoTextColor();render()});$("syncHoliday").addEventListener("click",()=>{$("holidayColor").value=$("bgColor").value;render()});$("cardColor").addEventListener("input",()=>{autoTextColor();render()});$("bgColor").addEventListener("input",()=>{$("holidayColor").value=$("bgColor").value;render()});$("download").addEventListener("click",downloadWallpaper);$("panelDownloadBtn").addEventListener("click",downloadWallpaper);$("homeDownload").addEventListener("click",downloadWallpaper);$("homePanelDownloadBtn").addEventListener("click",downloadWallpaper);$("mobileDownloadBtn").addEventListener("click",downloadWallpaper);$("lockTab").addEventListener("click",()=>switchMode("lock"));$("homeTab").addEventListener("click",()=>switchMode("home"));$("randomColorBtn").addEventListener("click",e=>{
   e.preventDefault();
-  trackEvent("random_color_click", "random_button");
+  trackEvent("random_color_click", activeMode==="home" ? "home_random_button" : "random_button");
   randomizePalette();
 });$("togglePanel").addEventListener("click",e=>{
   e.preventDefault();
   trackEvent("setting_panel_click", "setting_button");
   document.body.classList.toggle("panel-open");
-});const mobileBackdrop=$("mobileBackdrop");mobileBackdrop.addEventListener("click",()=>{document.body.classList.remove("panel-open")});let backdropStartY=0;mobileBackdrop.addEventListener("touchstart",e=>{if(e.touches&&e.touches.length)backdropStartY=e.touches[0].clientY},{passive:true});mobileBackdrop.addEventListener("touchend",e=>{if(!e.changedTouches||!e.changedTouches.length)return;const endY=e.changedTouches[0].clientY;if(endY-backdropStartY>45)document.body.classList.remove("panel-open")},{passive:true});randomizePalette()}
+});const mobileBackdrop=$("mobileBackdrop");mobileBackdrop.addEventListener("click",()=>{document.body.classList.remove("panel-open")});let backdropStartY=0;mobileBackdrop.addEventListener("touchstart",e=>{if(e.touches&&e.touches.length)backdropStartY=e.touches[0].clientY},{passive:true});mobileBackdrop.addEventListener("touchend",e=>{if(!e.changedTouches||!e.changedTouches.length)return;const endY=e.changedTouches[0].clientY;if(endY-backdropStartY>45)document.body.classList.remove("panel-open")},{passive:true});switchMode("lock");randomizePalette()}
 if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init)}else{init()}
 </script>
 </body>
