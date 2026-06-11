@@ -39,6 +39,23 @@
   .settings-group{display:block}
   .settings-group.hidden{display:none}
 
+
+  .edge-color-modal{display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.42);align-items:center;justify-content:center;padding:22px}
+  .edge-color-card{width:min(390px,calc(100vw - 44px));background:rgba(255,255,255,.96);border-radius:28px;padding:22px;box-shadow:0 24px 80px rgba(0,0,0,.26);backdrop-filter:blur(22px) saturate(1.2);-webkit-backdrop-filter:blur(22px) saturate(1.2)}
+  .edge-color-title{font-size:22px;font-weight:800;margin:0 0 16px;letter-spacing:-.04em}
+  .edge-color-preview{height:74px;border-radius:20px;border:1px solid rgba(0,0,0,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.45);margin-bottom:16px}
+  .edge-color-label{font-size:13px;font-weight:700;color:#3a3a3c;margin:14px 0 8px}
+  .edge-color-hex-row{display:grid;grid-template-columns:1fr 92px;gap:10px;align-items:center}
+  .edge-color-hex{height:46px;border:1px solid rgba(0,0,0,.12);border-radius:16px;padding:0 14px;font-size:17px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;background:#fff;color:#111}
+  .edge-color-apply-small{height:46px;margin:0;border-radius:16px;box-shadow:none;font-size:15px}
+  .edge-color-presets{display:grid;grid-template-columns:repeat(8,1fr);gap:9px;margin-top:8px}
+  .edge-color-swatch{width:100%;aspect-ratio:1;border-radius:999px;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 0 1px rgba(0,0,0,.10),0 5px 12px rgba(0,0,0,.10);cursor:pointer}
+  .edge-color-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+  .edge-color-actions button{height:48px;margin:0;border-radius:16px;font-size:16px}
+  .edge-color-cancel{background:rgba(118,118,128,.12);color:#007aff;box-shadow:none}
+  .edge-color-error{display:none;color:#ff3b30;font-size:12px;margin-top:8px}
+  body.edge-color-open{overflow:hidden}
+
   .mobile-bar,.mobile-backdrop{display:none}
   @media(max-width:900px){
     html,body{width:100%;height:100%;overflow:hidden;background:#fff} body{display:block;min-height:100dvh}
@@ -105,6 +122,24 @@
     <div id="mobileBackdrop" class="mobile-backdrop"></div>
     <div class="mobile-bar"><button id="mobileDownloadBtn" type="button">下载壁纸</button><button id="togglePanel" class="mobile-toggle" type="button"><span id="toggleText">设置</span><span class="mobile-arrow"></span></button></div>
   </main>
+  <div id="edgeColorModal" class="edge-color-modal" aria-hidden="true">
+    <div class="edge-color-card" role="dialog" aria-modal="true" aria-labelledby="edgeColorTitle">
+      <h2 id="edgeColorTitle" class="edge-color-title">选择颜色</h2>
+      <div id="edgeColorPreview" class="edge-color-preview"></div>
+      <div class="edge-color-label">输入颜色值</div>
+      <div class="edge-color-hex-row">
+        <input id="edgeColorHex" class="edge-color-hex" type="text" value="#00B4D8" maxlength="7" inputmode="text" autocomplete="off">
+        <button id="edgeColorApplySmall" class="edge-color-apply-small" type="button">预览</button>
+      </div>
+      <div id="edgeColorError" class="edge-color-error">请输入正确的颜色值，例如 #00B4D8</div>
+      <div class="edge-color-label">常用颜色</div>
+      <div id="edgeColorPresets" class="edge-color-presets"></div>
+      <div class="edge-color-actions">
+        <button id="edgeColorCancel" class="edge-color-cancel" type="button">取消</button>
+        <button id="edgeColorConfirm" type="button">确定</button>
+      </div>
+    </div>
+  </div>
 <script>
 const $=id=>document.getElementById(id);
 const cnMonths=["一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"];
@@ -210,6 +245,80 @@ function downloadWallpaper(){
   }
 
   const canvas=$("previewCanvas"),filename=activeMode==="home"?`phone-wallpaper.png`:`calendar-wallpaper-${$("year").value}-${$("month").value}.png`;if(canvas.toBlob){canvas.toBlob(blob=>{if(blob){saveBlob(blob,filename)}else{const a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download=filename;a.click()}},"image/png")}else{const a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download=filename;a.click()}}
+
+const isAndroidEdge = /Android/i.test(navigator.userAgent) && /EdgA/i.test(navigator.userAgent);
+let edgeColorTarget=null, edgeColorOriginal="";
+
+function normalizeHex(value){
+  let v=(value||"").trim();
+  if(!v)return null;
+  if(v[0]!=="#")v="#"+v;
+  if(/^#[0-9A-Fa-f]{3}$/.test(v)){v="#"+v.slice(1).split("").map(ch=>ch+ch).join("");}
+  if(/^#[0-9A-Fa-f]{6}$/.test(v))return v.toUpperCase();
+  return null;
+}
+function setEdgePreview(hex){
+  $("edgeColorPreview").style.background=hex;
+  $("edgeColorHex").value=hex.toUpperCase();
+  $("edgeColorError").style.display="none";
+}
+function applyEdgeColor(){
+  const hex=normalizeHex($("edgeColorHex").value);
+  if(!hex){$("edgeColorError").style.display="block";return false;}
+  setEdgePreview(hex);
+  if(edgeColorTarget){
+    edgeColorTarget.value=hex;
+    edgeColorTarget.dispatchEvent(new Event("input",{bubbles:true}));
+    edgeColorTarget.dispatchEvent(new Event("change",{bubbles:true}));
+  }
+  return true;
+}
+function openEdgeColorPicker(input){
+  edgeColorTarget=input;
+  edgeColorOriginal=input.value;
+  setEdgePreview(input.value);
+  $("edgeColorModal").style.display="flex";
+  $("edgeColorModal").setAttribute("aria-hidden","false");
+  document.body.classList.add("edge-color-open");
+  setTimeout(()=>{$("edgeColorHex").focus();$("edgeColorHex").select()},60);
+  trackEvent("edge_color_picker_open","android_edge_color_picker");
+}
+function closeEdgeColorPicker(keep){
+  if(!keep && edgeColorTarget){
+    edgeColorTarget.value=edgeColorOriginal;
+    edgeColorTarget.dispatchEvent(new Event("input",{bubbles:true}));
+    edgeColorTarget.dispatchEvent(new Event("change",{bubbles:true}));
+  }
+  $("edgeColorModal").style.display="none";
+  $("edgeColorModal").setAttribute("aria-hidden","true");
+  document.body.classList.remove("edge-color-open");
+  edgeColorTarget=null;
+}
+function initEdgeColorPicker(){
+  if(!isAndroidEdge)return;
+  const presets=["#000000","#FFFFFF","#151515","#AFDB8A","#B9D886","#00B4D8","#0012B8","#3A86FF","#8338EC","#FF006E","#FFAFCC","#FFB86B","#FEE440","#06D6A0","#2EC4B6","#E76F51"];
+  const box=$("edgeColorPresets");
+  presets.forEach(hex=>{
+    const b=document.createElement("button");
+    b.type="button";b.className="edge-color-swatch";b.style.background=hex;b.setAttribute("aria-label",hex);
+    b.addEventListener("click",()=>{setEdgePreview(hex);applyEdgeColor()});
+    box.appendChild(b);
+  });
+  document.querySelectorAll('input[type="color"]').forEach(input=>{
+    input.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openEdgeColorPicker(input)});
+    input.addEventListener("mousedown",e=>{e.preventDefault()});
+    input.addEventListener("touchstart",e=>{e.preventDefault();openEdgeColorPicker(input)},{passive:false});
+  });
+  $("edgeColorApplySmall").addEventListener("click",applyEdgeColor);
+  $("edgeColorHex").addEventListener("input",()=>{
+    const hex=normalizeHex($("edgeColorHex").value);
+    if(hex){setEdgePreview(hex);if(edgeColorTarget){edgeColorTarget.value=hex;edgeColorTarget.dispatchEvent(new Event("input",{bubbles:true}))}}
+  });
+  $("edgeColorCancel").addEventListener("click",()=>closeEdgeColorPicker(false));
+  $("edgeColorConfirm").addEventListener("click",()=>{if(applyEdgeColor())closeEdgeColorPicker(true)});
+  $("edgeColorModal").addEventListener("click",e=>{if(e.target===$("edgeColorModal"))closeEdgeColorPicker(false)});
+}
+
 function switchMode(mode){
   activeMode=mode;
   $("lockTab").classList.toggle("active",mode==="lock");
@@ -226,7 +335,7 @@ function init(){const today=new Date();$("year").value=today.getFullYear();$("mo
   e.preventDefault();
   trackEvent("setting_panel_click", "setting_button");
   document.body.classList.toggle("panel-open");
-});const mobileBackdrop=$("mobileBackdrop");mobileBackdrop.addEventListener("click",()=>{document.body.classList.remove("panel-open")});let backdropStartY=0;mobileBackdrop.addEventListener("touchstart",e=>{if(e.touches&&e.touches.length)backdropStartY=e.touches[0].clientY},{passive:true});mobileBackdrop.addEventListener("touchend",e=>{if(!e.changedTouches||!e.changedTouches.length)return;const endY=e.changedTouches[0].clientY;if(endY-backdropStartY>45)document.body.classList.remove("panel-open")},{passive:true});switchMode("lock");randomizePalette()}
+});const mobileBackdrop=$("mobileBackdrop");mobileBackdrop.addEventListener("click",()=>{document.body.classList.remove("panel-open")});let backdropStartY=0;mobileBackdrop.addEventListener("touchstart",e=>{if(e.touches&&e.touches.length)backdropStartY=e.touches[0].clientY},{passive:true});mobileBackdrop.addEventListener("touchend",e=>{if(!e.changedTouches||!e.changedTouches.length)return;const endY=e.changedTouches[0].clientY;if(endY-backdropStartY>45)document.body.classList.remove("panel-open")},{passive:true});switchMode("lock");initEdgeColorPicker();randomizePalette()}
 if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init)}else{init()}
 </script>
 </body>
