@@ -151,9 +151,67 @@ for(let i=1;i<=12;i++){const opt=document.createElement("option");opt.value=i;op
 
 function luminance(hex){const c=hex.replace("#","");const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);return(0.299*r+0.587*g+0.114*b)/255}
 function autoTextColor(){$("textColor").value=luminance($("cardColor").value)<.55?"#ffffff":"#111111"}
-function getLunarParts(date){try{const parts=new Intl.DateTimeFormat("zh-u-ca-chinese",{month:"long",day:"numeric"}).formatToParts(date);const mText=(parts.find(p=>p.type==="month")||{}).value||"";const dText=(parts.find(p=>p.type==="day")||{}).value||"";let m=lunarMonths.findIndex(x=>mText.indexOf(x.replace("月",""))!==-1)+1;let d=parseInt(dText,10);if(!m||!d)return null;return{m,d}}catch(e){return null}}
-function lunarText(date){const p=getLunarParts(date);if(!p)return"";if(p.d===1)return lunarMonths[p.m-1];return lunarDays[p.d-1]||""}
-function holidayName(date){const m=date.getMonth()+1,d=date.getDate();const solar={"1-1":"元旦","2-14":"情人节","3-8":"妇女节","4-4":"清明","4-5":"清明","5-1":"劳动节","5-4":"青年节","6-1":"儿童节","7-1":"建党节","8-1":"建军节","9-10":"教师节","10-1":"国庆节","12-25":"圣诞节"};if(solar[m+"-"+d])return solar[m+"-"+d];const lp=getLunarParts(date);if(lp){const lunar={"1-1":"春节","1-15":"元宵","5-5":"端午","7-7":"七夕","8-15":"中秋","9-9":"重阳","12-8":"腊八","12-23":"小年"};if(lunar[lp.m+"-"+lp.d])return lunar[lp.m+"-"+lp.d]}const day=date.getDay(),weekIndex=Math.ceil(d/7);if(m===5&&day===0&&weekIndex===2)return"母亲节";if(m===6&&day===0&&weekIndex===3)return"父亲节";if(m===11&&day===4&&d>=22&&d<=28)return"感恩节";return""}
+const lunarInfo=[
+0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,
+0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,
+0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,
+0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,
+0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,
+0x06ca0,0x0b550,0x15355,0x04da0,0x0a5d0,0x14573,0x052d0,0x0a9a8,0x0e950,0x06aa0,
+0x0aea6,0x0ab50,0x04b60,0x0aae4,0x0a570,0x05260,0x0f263,0x0d950,0x05b57,0x056a0,
+0x096d0,0x04dd5,0x04ad0,0x0a4d0,0x0d4d4,0x0d250,0x0d558,0x0b540,0x0b5a0,0x195a6,
+0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,0x09570,
+0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06b58,0x05ac0,0x0ab60,0x096d5,0x092e0,
+0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,0x0cab5,
+0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0,0x0a930,
+0x07954,0x06aa0,0x0ad50,0x05b52,0x04b60,0x0a6e6,0x0a4e0,0x0d260,0x0ea65,0x0d530,
+0x05aa0,0x076a3,0x096d0,0x04afb,0x04ad0,0x0a4d0,0x1d0b6,0x0d250,0x0d520,0x0dd45,
+0x0b5a0,0x056d0,0x055b2,0x049b0,0x0a577,0x0a4b0,0x0aa50,0x1b255,0x06d20,0x0ada0,
+0x14b63,0x09370,0x049f8,0x04970,0x064b0,0x168a6,0x0ea50,0x06b20,0x1a6c4,0x0aae0,
+0x0a2e0,0x0d2e3,0x0c960,0x0d557,0x0d4a0,0x0da50,0x05d55,0x056a0,0x0a6d0,0x055d4,
+0x052d0,0x0a9b8,0x0a950,0x0b4a0,0x0b6a6,0x0ad50,0x055a0,0x0aba4,0x0a5b0,0x052b0,
+0x0b273,0x06930,0x07337,0x06aa0,0x0ad50,0x14b55,0x04b60,0x0a570,0x054e4,0x0d160,
+0x0e968,0x0d520,0x0daa0,0x16aa6,0x056d0,0x04ae0,0x0a9d4,0x0a2d0,0x0d150,0x0f252
+];
+function lunarLeapMonth(y){return lunarInfo[y-1900]&0xf}
+function lunarLeapDays(y){return lunarLeapMonth(y)?((lunarInfo[y-1900]&0x10000)?30:29):0}
+function lunarMonthDays(y,m){return (lunarInfo[y-1900]&(0x10000>>m))?30:29}
+function lunarYearDays(y){let sum=348,info=lunarInfo[y-1900];for(let bit=0x8000;bit>0x8;bit>>=1){if(info&bit)sum++}return sum+lunarLeapDays(y)}
+function getLunarPartsFallback(date){
+  const y=date.getFullYear(); if(y<1900||y>2100)return null;
+  let offset=Math.floor((Date.UTC(y,date.getMonth(),date.getDate())-Date.UTC(1900,0,31))/86400000);
+  if(offset<0)return null;
+  let ly=1900;
+  while(ly<=2100){const days=lunarYearDays(ly);if(offset<days)break;offset-=days;ly++}
+  if(ly>2100)return null;
+  const leap=lunarLeapMonth(ly);let lm=1,isLeap=false;
+  while(lm<=12){
+    const days=isLeap?lunarLeapDays(ly):lunarMonthDays(ly,lm);
+    if(offset<days)break;
+    offset-=days;
+    if(leap===lm&&!isLeap){isLeap=true}else{if(isLeap)isLeap=false;lm++}
+  }
+  return{m:lm,d:offset+1,isLeap};
+}
+function getLunarParts(date){
+  try{
+    const parts=new Intl.DateTimeFormat("zh-u-ca-chinese",{month:"long",day:"numeric"}).formatToParts(date);
+    const mText=((parts.find(p=>p.type==="month")||{}).value||"").trim();
+    const dText=((parts.find(p=>p.type==="day")||{}).value||"").trim();
+    const monthMap=[["正月","一月"],["二月"],["三月"],["四月"],["五月"],["六月"],["七月"],["八月"],["九月"],["十月"],["冬月","十一月"],["腊月","十二月"]];
+    let m=0;
+    for(let i=0;i<monthMap.length;i++){if(monthMap[i].some(name=>mText.includes(name))){m=i+1;break}}
+    const d=parseInt(dText,10),isLeap=/闰/.test(mText);
+    if(m&&d>=1&&d<=30)return{m,d,isLeap};
+  }catch(e){}
+  return getLunarPartsFallback(date);
+}
+function lunarText(date){
+  const p=getLunarParts(date);if(!p)return"";
+  if(p.d===1)return(p.isLeap?"闰":"")+lunarMonths[p.m-1];
+  return lunarDays[p.d-1]||"";
+}
+function holidayName(date){const m=date.getMonth()+1,d=date.getDate();const solar={"1-1":"元旦","2-14":"情人节","3-8":"妇女节","4-4":"清明","4-5":"清明","5-1":"劳动节","5-4":"青年节","6-1":"儿童节","7-1":"建党节","8-1":"建军节","9-10":"教师节","10-1":"国庆节","12-25":"圣诞节"};if(solar[m+"-"+d])return solar[m+"-"+d];const lp=getLunarParts(date);if(lp&&!lp.isLeap){const lunar={"1-1":"春节","1-15":"元宵","5-5":"端午","7-7":"七夕","8-15":"中秋","9-9":"重阳","12-8":"腊八","12-23":"小年"};if(lunar[lp.m+"-"+lp.d])return lunar[lp.m+"-"+lp.d]}const day=date.getDay(),weekIndex=Math.ceil(d/7);if(m===5&&day===0&&weekIndex===2)return"母亲节";if(m===6&&day===0&&weekIndex===3)return"父亲节";if(m===11&&day===4&&d>=22&&d<=28)return"感恩节";return""}
 
 function roundRect(ctx,x,y,w,h,r){const radius=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+radius,y);ctx.lineTo(x+w-radius,y);ctx.quadraticCurveTo(x+w,y,x+w,y+radius);ctx.lineTo(x+w,y+h-radius);ctx.quadraticCurveTo(x+w,y+h,x+w-radius,y+h);ctx.lineTo(x+radius,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-radius);ctx.lineTo(x,y+radius);ctx.quadraticCurveTo(x,y,x+radius,y);ctx.closePath()}
 function topRoundRect(ctx,x,y,w,h,r){const radius=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+radius,y);ctx.lineTo(x+w-radius,y);ctx.quadraticCurveTo(x+w,y,x+w,y+radius);ctx.lineTo(x+w,y+h);ctx.lineTo(x,y+h);ctx.lineTo(x,y+radius);ctx.quadraticCurveTo(x,y,x+radius,y);ctx.closePath()}
