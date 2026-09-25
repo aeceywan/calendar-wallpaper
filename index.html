@@ -75,6 +75,16 @@
     .random-color-btn{position:fixed;top:18px;right:18px;width:46px;height:46px;z-index:50} body.panel-open .random-color-btn{top:14px;right:14px;transform:scale(.92)}
     select#year,select#month{font-size:16px;font-weight:600;text-align:center;text-align-last:center}
   }
+  .date-stepper{display:flex;align-items:center;height:44px;border:1px solid var(--ui-line);border-radius:15px;background:rgba(255,255,255,.72);overflow:hidden}
+  .date-stepper button{flex:0 0 38px;width:38px;height:42px;margin:0;padding:0;border-radius:0;background:transparent;color:var(--ui-blue);box-shadow:none;font-size:28px;font-weight:400;line-height:1}
+  .date-stepper button:disabled{opacity:.25;cursor:default}
+  .date-stepper output{flex:1;min-width:0;text-align:center;font-size:16px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .weekday-options{padding:0;margin:17px 0 0;border:0;min-width:0}
+  .weekday-options legend{padding:0;font-size:13px;font-weight:600;color:#2f2f33;margin-bottom:8px}
+  .radio-options{display:flex;gap:28px;min-height:44px;align-items:center}
+  .panel .radio-options label{display:flex;align-items:center;gap:8px;margin:0;min-height:44px;font-size:14px;cursor:pointer}
+  .radio-options input{appearance:auto;-webkit-appearance:radio;flex:none;width:18px;height:18px;margin:0;padding:0;accent-color:var(--ui-blue)}
+  .date-stepper button:focus-visible,.radio-options input:focus-visible{outline:2px solid var(--ui-blue);outline-offset:-3px}
 </style>
 <!-- Google Analytics 4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-18K04G1G02"></script>
@@ -97,7 +107,8 @@
     </div>
 
     <div id="lockSettings" class="settings-group">
-      <div class="row"><div><label>年份</label><select id="year"></select></div><div><label>月份</label><select id="month"></select></div></div>
+      <div class="row"><div><label id="yearLabel">年份</label><div class="date-stepper" role="group" aria-labelledby="yearLabel"><button id="yearPrev" type="button" aria-label="上一年">‹</button><output id="yearDisplay" aria-live="polite"></output><button id="yearNext" type="button" aria-label="下一年">›</button><input id="year" type="hidden"></div></div><div><label id="monthLabel">月份</label><div class="date-stepper" role="group" aria-labelledby="monthLabel"><button id="monthPrev" type="button" aria-label="上一个月">‹</button><output id="monthDisplay" aria-live="polite"></output><button id="monthNext" type="button" aria-label="下一个月">›</button><input id="month" type="hidden"></div></div></div>
+      <fieldset class="weekday-options"><legend>星期显示</legend><div class="radio-options"><label><input type="radio" id="weekdayEnglish" name="weekdayLanguage" value="en" checked>英文</label><label><input type="radio" id="weekdayChinese" name="weekdayLanguage" value="zh">中文</label></div></fieldset>
       <label style="display:flex;align-items:center;gap:8px;font-weight:700;"><input id="mondayStart" type="checkbox" style="width:18px;height:18px;margin:0;">星期一作为每周第一天</label>
       <label>日历行间距</label><div class="range-wrap"><input id="rowGap" type="range" min="20" max="70" step="1" value="40"><span id="rowGapValue">40px</span></div>
       <label>祝福语</label><input id="wish" maxlength="4" value="富贵吉祥">
@@ -114,7 +125,7 @@
       <button id="homeDownload" type="button">下载壁纸</button><button id="homePanelDownloadBtn" class="panel-download-btn" type="button">下载壁纸</button>
     </div>
 
-    <p class="tip">稳定版：预览和下载使用同一个 Canvas，不再截图页面，兼容不同手机浏览器。</p>
+
   </aside>
   <main class="stage">
     <button id="randomColorBtn" class="random-color-btn" type="button" aria-label="随机配色" title="随机配色"><svg viewBox="0 0 48 48" fill="none"><path d="M40 33L44 37L40 41"/><path d="M40 7L44 11L40 15"/><path d="M44 11H37C29.8203 11 24 16.8203 24 24C24 31.1797 29.8203 37 37 37H44"/><path d="M4 37H11C18.1797 37 24 31.1797 24 24C24 16.8203 18.1797 11 11 11H4"/></svg></button>
@@ -146,8 +157,8 @@ const cnMonths=["一月","二月","三月","四月","五月","六月","七月","
 const enMonths=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
 const lunarDays=["初一","初二","初三","初四","初五","初六","初七","初八","初九","初十","十一","十二","十三","十四","十五","十六","十七","十八","十九","二十","廿一","廿二","廿三","廿四","廿五","廿六","廿七","廿八","廿九","三十"];
 const lunarMonths=["正月","二月","三月","四月","五月","六月","七月","八月","九月","十月","冬月","腊月"];
-for(let y=1901;y<=2100;y++){const opt=document.createElement("option");opt.value=y;opt.textContent=y+"年";$("year").appendChild(opt)}
-for(let i=1;i<=12;i++){const opt=document.createElement("option");opt.value=i;opt.textContent=i+"月";$("month").appendChild(opt)}
+
+
 
 function luminance(hex){const c=hex.replace("#","");const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);return(0.299*r+0.587*g+0.114*b)/255}
 function autoTextColor(){$("textColor").value=luminance($("cardColor").value)<.55?"#ffffff":"#111111"}
@@ -225,12 +236,32 @@ function drawWallpaper(ctx){
  const centerX=W/2,headerTop=cardY+100,headerCenterY=headerTop+44,zhX=centerX-245;
  ctx.fillStyle=holiday;roundRect(ctx,zhX-36,headerCenterY-31,9,66,3);ctx.fill();
  drawText(ctx,cnMonths[month-1],zhX,headerCenterY,'600 56px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif',holiday,"left","middle");
- drawText(ctx,enMonths[month-1],centerX+20,headerCenterY+1,'700 88px -apple-system,BlinkMacSystemFont,Arial,sans-serif',text);
  const wish=($("wish").value||"富贵吉祥").slice(0,4);
+ let englishMonthX=centerX+20;
+ if(month===11||month===12){
+   // Center the visible English lettering in the gap between the Chinese title and wish.
+   const bounds=(value,font)=>{
+     ctx.font=font;ctx.textAlign="left";
+     const m=ctx.measureText(value);
+     return {width:m.width,left:Number.isFinite(m.actualBoundingBoxLeft)?-m.actualBoundingBoxLeft:0,
+       right:Number.isFinite(m.actualBoundingBoxRight)?m.actualBoundingBoxRight:m.width};
+   };
+   const chinese=bounds(cnMonths[month-1],'600 56px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif');
+   const wishLeft=Math.min(...[wish.slice(0,2),wish.slice(2,4)].filter(Boolean).map(line=>{
+     const b=bounds(line,'700 42px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif');
+     return centerX+255-b.width/2+b.left;
+   }));
+   const english=bounds(enMonths[month-1],'700 88px -apple-system,BlinkMacSystemFont,Arial,sans-serif');
+   englishMonthX=(zhX+chinese.right+wishLeft)/2-(english.left+english.right-english.width)/2;
+ }
+ drawText(ctx,enMonths[month-1],englishMonthX,headerCenterY+1,'700 88px -apple-system,BlinkMacSystemFont,Arial,sans-serif',text);
  drawText(ctx,wish.slice(0,2),centerX+255,headerCenterY-24,'700 42px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif',holiday);
  drawText(ctx,wish.slice(2,4),centerX+255,headerCenterY+27,'700 42px -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif',holiday);
  const contentX=153,contentW=900,colW=contentW/7,weekY=headerCenterY+170;
- const weekLabels=mondayStart?["M","T","W","T","F","S","S"]:["S","M","T","W","T","F","S"];
+ const chineseWeekdays=$("weekdayChinese").checked;
+ const weekLabels=chineseWeekdays
+   ?(mondayStart?["一","二","三","四","五","六","日"]:["日","一","二","三","四","五","六"])
+   :(mondayStart?["M","T","W","T","F","S","S"]:["S","M","T","W","T","F","S"]);
  for(let i=0;i<7;i++){const isWeekendCol=mondayStart?i>=5:(i===0||i===6);drawText(ctx,weekLabels[i],contentX+colW*i+colW/2,weekY,'600 46px -apple-system,BlinkMacSystemFont,Arial,sans-serif',isWeekendCol?holiday:text)}
  const first=new Date(year,month-1,1),count=new Date(year,month,0).getDate(),blankCount=mondayStart?((first.getDay()+6)%7):first.getDay();
  const dateStartY=weekY+90,rowStep=108+rowGap;
@@ -267,7 +298,21 @@ function setCanvasSizeForMode(){
  if(activeMode==="home"){canvas.width=HOME_W;canvas.height=HOME_H;wrap.style.height=(402*HOME_H/HOME_W)+"px";}
  else{canvas.width=LOCK_W;canvas.height=LOCK_H;wrap.style.height="970px";}
 }
+function updateDateControls(){
+ const year=+$("year").value,month=+$("month").value;
+ $("yearDisplay").textContent=year+"年";$("monthDisplay").textContent=month+"月";
+ $("yearPrev").disabled=year<=1901;$("yearNext").disabled=year>=2100;
+ $("monthPrev").disabled=year<=1901&&month===1;$("monthNext").disabled=year>=2100&&month===12;
+}
+function stepDate(unit,delta){
+ let year=+$("year").value,month=+$("month").value;
+ if(unit==="year")year+=delta;
+ else{month+=delta;if(month<1){month=12;year--}if(month>12){month=1;year++}}
+ if(year<1901||year>2100)return;
+ $("year").value=year;$("month").value=month;render();
+}
 function render(){
+ updateDateControls();
  $("rowGapValue").textContent=$("rowGap").value+"px";
  setCanvasSizeForMode();
  const ctx=$("previewCanvas").getContext("2d");
@@ -385,7 +430,12 @@ function switchMode(mode){
   $("homeSettings").classList.toggle("hidden",mode!=="home");
   render();
 }
-function init(){const today=new Date();$("year").value=today.getFullYear();$("month").value=today.getMonth()+1;["year","month","wish","bgColor","cardColor","holidayColor","textColor","mondayStart","rowGap","homeColor1","homeColor2"].forEach(id=>{$(id).addEventListener("input",render);$(id).addEventListener("change",render)});$("autoText").addEventListener("click",()=>{autoTextColor();render()});$("syncHoliday").addEventListener("click",()=>{$("holidayColor").value=$("bgColor").value;render()});$("cardColor").addEventListener("input",()=>{autoTextColor();render()});$("bgColor").addEventListener("input",()=>{$("holidayColor").value=$("bgColor").value;render()});$("download").addEventListener("click",downloadWallpaper);$("panelDownloadBtn").addEventListener("click",downloadWallpaper);$("homeDownload").addEventListener("click",downloadWallpaper);$("homePanelDownloadBtn").addEventListener("click",downloadWallpaper);$("mobileDownloadBtn").addEventListener("click",downloadWallpaper);$("lockTab").addEventListener("click",()=>switchMode("lock"));$("homeTab").addEventListener("click",()=>switchMode("home"));$("randomColorBtn").addEventListener("click",e=>{
+function init(){
+ ["year","month"].forEach(unit=>{
+   $(unit+"Prev").addEventListener("click",()=>stepDate(unit,-1));
+   $(unit+"Next").addEventListener("click",()=>stepDate(unit,1));
+ });
+ const today=new Date();$("year").value=today.getFullYear();$("month").value=today.getMonth()+1;["year","month","wish","bgColor","cardColor","holidayColor","textColor","mondayStart","weekdayEnglish","weekdayChinese","rowGap","homeColor1","homeColor2"].forEach(id=>{$(id).addEventListener("input",render);$(id).addEventListener("change",render)});$("autoText").addEventListener("click",()=>{autoTextColor();render()});$("syncHoliday").addEventListener("click",()=>{$("holidayColor").value=$("bgColor").value;render()});$("cardColor").addEventListener("input",()=>{autoTextColor();render()});$("bgColor").addEventListener("input",()=>{$("holidayColor").value=$("bgColor").value;render()});$("download").addEventListener("click",downloadWallpaper);$("panelDownloadBtn").addEventListener("click",downloadWallpaper);$("homeDownload").addEventListener("click",downloadWallpaper);$("homePanelDownloadBtn").addEventListener("click",downloadWallpaper);$("mobileDownloadBtn").addEventListener("click",downloadWallpaper);$("lockTab").addEventListener("click",()=>switchMode("lock"));$("homeTab").addEventListener("click",()=>switchMode("home"));$("randomColorBtn").addEventListener("click",e=>{
   e.preventDefault();
   trackEvent("random_color_click", activeMode==="home" ? "home_random_button" : "random_button");
   randomizePalette();
